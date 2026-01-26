@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Maneit · Music</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Maneit Music Node — sound, structure, emotion." />
+
+  <!-- Core styles -->
+  <link rel="stylesheet" href="/css/core.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/player.css" />
+</head>
+
+<body>
+
+  <!-- ========================= -->
+  <!-- HEADER -->
+  <!-- ========================= -->
+  <header class="site-header">
+    <div class="brand">
+      <div class="brand-kicker">MANEIT</div>
+      <h1 class="brand-title">MUSIC</h1>
+    </div>
+
+    <nav class="site-nav">
+      <span class="nav-item">LISTEN</span>
+      <span class="nav-item">PROJECTS</span>
+      <span class="nav-item">DOWNLOAD</span>
+    </nav>
+  </header>
+
+  <!-- ========================= -->
+  <!-- HERO -->
+  <!-- ========================= -->
+  <section class="hero">
+    <h2>Sound.<br>Structure.<br>Emotion.</h2>
+    <p>
+      This is not a playlist.<br>
+      This is a control room.
+    </p>
+  </section>
+
+  <!-- ========================= -->
+  <!-- PROJECT / TRACK LIST -->
+  <!-- ========================= -->
+  <main class="content">
+
+    <section class="projects" id="projects">
+      <!-- injected from tracks.json later -->
+    </section>
+
+  </main>
+
+  <!-- ========================= -->
+  <!-- PLAYER (FOCUS MODE) -->
+  <!-- ========================= -->
+  <footer class="player" id="player" hidden>
+    <div class="player-info">
+      <span id="player-title">—</span>
+    </div>
+
+    <div class="player-controls">
+      <button id="playPause">Play</button>
+      <a id="downloadMp3" href="#" download>MP3</a>
+      <a id="downloadWav" href="#" download>WAV</a>
+    </div>
+
+    <audio id="audio"></audio>
+  </footer>
+
+  <!-- Scripts (kommer senere) -->
+  <script src="/js/player.js" defer></script>
+  <script src="/js/ui.js" defer></script>
+
+</body>
+</html>
