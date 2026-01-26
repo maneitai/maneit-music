@@ -1,46 +1,111 @@
 /* ============================= */
-/* MANEIT MUSIC — PLAYER */
+/* MANEIT MUSIC — PLAYER (v2) */
 /* ============================= */
 
 .player {
   position: fixed;
-  bottom: 0;
   left: 0;
   right: 0;
+  bottom: 0;
 
+  /* control room: darker & denser */
+  background: rgba(8, 10, 14, 0.88);
+  backdrop-filter: blur(14px);
+
+  border-top: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 18px 70px rgba(0,0,0,0.75);
+
+  padding: 14px 18px;
+
+  /* center the whole control strip */
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  padding: var(--space-md) var(--space-lg);
-
-  background: rgba(12, 16, 22, 0.85);
-  backdrop-filter: blur(12px);
-  border-top: 1px solid var(--color-line);
-
-  box-shadow: var(--shadow-hard);
+  justify-content: center;
 }
 
-.player-info {
+.player-inner {
+  width: 100%;
+  max-width: var(--max-width);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  align-items: center;
+}
+
+/* Left side: title + time/progress */
+.player-left {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.player-title {
   font-family: var(--font-mono);
   font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(232,237,247,0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.player-controls {
+.player-meta {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.player-time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(154,163,178,0.95);
+  min-width: 72px;
+}
+
+/* Progress bar */
+.player-progress {
+  width: 100%;
+  accent-color: var(--color-accent);
+  height: 18px;
+}
+
+/* Right side: buttons */
+.player-right {
   display: flex;
-  gap: var(--space-sm);
+  gap: 10px;
+  align-items: center;
 }
 
+.player button,
 .player a {
   font-family: var(--font-mono);
   font-size: 12px;
-  border: 1px solid var(--color-line);
+
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  color: var(--color-text);
+
   padding: 10px 14px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.03);
+
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+  user-select: none;
 }
 
+.player button:hover,
 .player a:hover {
-  border-color: var(--color-accent);
-  background: rgba(255,255,255,0.05);
+  border-color: rgba(159,183,255,0.35);
+  background: rgba(255,255,255,0.06);
+  transform: translateY(-1px);
+}
+
+.player button.primary {
+  border-color: rgba(159,183,255,0.35);
+  background: rgba(159,183,255,0.10);
+}
+
+/* Hide WAV button cleanly when absent */
+.player a[hidden] {
+  display: none !important;
 }
