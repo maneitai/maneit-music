@@ -10,6 +10,47 @@
   <link rel="stylesheet" href="css/core.css" />
   <link rel="stylesheet" href="css/layout.css" />
   <link rel="stylesheet" href="css/player.css" />
+
+  <style>
+    /* tiny helper: smooth anchor scroll */
+    html { scroll-behavior: smooth; }
+
+    /* keep anchors from hiding under header line */
+    .anchor { scroll-margin-top: 24px; }
+
+    /* download note (minimal, fits your theme) */
+    .download-note {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border: 1px solid var(--color-line);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md);
+      box-shadow: var(--shadow-soft);
+    }
+    .download-note h3 {
+      font-size: 14px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 10px 0;
+    }
+    .download-note p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--color-muted);
+    }
+    .download-note .mono {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: rgba(154,163,178,0.95);
+    }
+    .nav-link {
+      cursor: pointer;
+      user-select: none;
+    }
+    .nav-link:hover {
+      color: rgba(232,237,247,0.92);
+    }
+  </style>
 </head>
 
 <body>
@@ -21,9 +62,9 @@
     </div>
 
     <nav class="site-nav">
-      <span class="nav-item">LISTEN</span>
-      <span class="nav-item">PROJECTS</span>
-      <span class="nav-item">DOWNLOAD</span>
+      <span class="nav-item nav-link" data-jump="#listen">LISTEN</span>
+      <span class="nav-item nav-link" data-jump="#projects">PROJECTS</span>
+      <span class="nav-item nav-link" data-jump="#download">DOWNLOAD</span>
     </nav>
   </header>
 
@@ -36,7 +77,29 @@
   </section>
 
   <main class="content">
-    <section class="projects" id="projects"></section>
+    <!-- anchors -->
+    <div id="listen" class="anchor"></div>
+    <div id="projects" class="anchor"></div>
+
+    <section class="projects" id="projectsList"></section>
+
+    <div style="height: 18px;"></div>
+
+    <div id="download" class="anchor"></div>
+    <section class="download-note">
+      <h3>Download</h3>
+      <p>
+        Every track is available as a direct download.
+        Use the buttons next to each track:
+        <span class="mono">MP3</span> for quick listening and
+        <span class="mono">WAV</span> for lossless.
+      </p>
+      <p class="mono" style="margin-top:10px;">
+        Bulk downloads (ZIP per project) can be added later.
+      </p>
+    </section>
+
+    <div style="height: 90px;"></div> <!-- breathing room above fixed player -->
   </main>
 
   <!-- PLAYER v2 -->
@@ -74,7 +137,17 @@
   </footer>
 
   <script>
-    const projectsEl = document.getElementById("projects");
+    // ===== Nav jump (real behavior) =====
+    document.querySelectorAll("[data-jump]").forEach(el => {
+      el.addEventListener("click", () => {
+        const sel = el.getAttribute("data-jump");
+        const target = document.querySelector(sel);
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+
+    // ===== Elements =====
+    const projectsEl = document.getElementById("projectsList");
 
     const audio = document.getElementById("audio");
     const player = document.getElementById("player");
@@ -89,6 +162,7 @@
     const timeNowEl = document.getElementById("time-now");
     const timeTotalEl = document.getElementById("time-total");
 
+    // ===== State =====
     let isPlaying = false;
     let activeRow = null;
     let activePlayBtn = null;
@@ -142,14 +216,12 @@
       audio.play();
       isPlaying = true;
       playPauseBtn.textContent = "Pause";
-      playPauseBtn.classList.add("primary");
     }
 
     function pausePlayback() {
       audio.pause();
       isPlaying = false;
       playPauseBtn.textContent = "Play";
-      playPauseBtn.classList.add("primary");
     }
 
     function toggleFromRow(row, playBtn, track) {
@@ -177,6 +249,7 @@
       playNewSource(mp3);
     }
 
+    // ===== Footer play/pause =====
     playPauseBtn.addEventListener("click", () => {
       if (!audio.src) return;
 
@@ -193,7 +266,7 @@
       }
     });
 
-    // progress update
+    // ===== Progress =====
     let isScrubbing = false;
 
     audio.addEventListener("loadedmetadata", () => {
@@ -207,12 +280,7 @@
 
       timeNowEl.textContent = fmtTime(audio.currentTime);
       const d = audio.duration || 0;
-      if (d > 0) {
-        const v = Math.round((audio.currentTime / d) * 1000);
-        progress.value = String(v);
-      } else {
-        progress.value = "0";
-      }
+      progress.value = d > 0 ? String(Math.round((audio.currentTime / d) * 1000)) : "0";
     });
 
     progress.addEventListener("pointerdown", () => { isScrubbing = true; });
@@ -222,15 +290,13 @@
       const d = audio.duration || 0;
       if (d <= 0) return;
       const v = Number(progress.value) / 1000;
-      const t = v * d;
-      timeNowEl.textContent = fmtTime(t);
+      timeNowEl.textContent = fmtTime(v * d);
     });
 
     progress.addEventListener("change", () => {
       const d = audio.duration || 0;
       if (d <= 0) return;
-      const v = Number(progress.value) / 1000;
-      audio.currentTime = v * d;
+      audio.currentTime = (Number(progress.value) / 1000) * d;
     });
 
     audio.addEventListener("ended", () => {
@@ -242,6 +308,7 @@
       progress.value = "0";
     });
 
+    // ===== Render =====
     function renderProjects(data) {
       projectsEl.innerHTML = "";
 
