@@ -1,0 +1,46 @@
+/* ============================= */
+/* MANEIT MUSIC — PLAYER */
+/* ============================= */
+
+.player {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: var(--space-md) var(--space-lg);
+
+  background: rgba(12, 16, 22, 0.85);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--color-line);
+
+  box-shadow: var(--shadow-hard);
+}
+
+.player-info {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.player-controls {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.player a {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  border: 1px solid var(--color-line);
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.03);
+}
+
+.player a:hover {
+  border-color: var(--color-accent);
+  background: rgba(255,255,255,0.05);
+}
