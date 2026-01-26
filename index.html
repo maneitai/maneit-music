@@ -39,18 +39,38 @@
     <section class="projects" id="projects"></section>
   </main>
 
+  <!-- PLAYER v2 -->
   <footer class="player" id="player" hidden>
-    <div class="player-info">
-      <span id="player-title">—</span>
-    </div>
+    <div class="player-inner">
+      <div class="player-left">
+        <div class="player-title" id="player-title">—</div>
 
-    <div class="player-controls">
-      <button id="playPause">Play</button>
-      <a id="downloadMp3" href="#" download>MP3</a>
-      <a id="downloadWav" href="#" download>WAV</a>
-    </div>
+        <div class="player-meta">
+          <div class="player-time" id="time-now">0:00</div>
 
-    <audio id="audio"></audio>
+          <input
+            class="player-progress"
+            id="progress"
+            type="range"
+            min="0"
+            max="1000"
+            value="0"
+            step="1"
+            aria-label="Track position"
+          />
+
+          <div class="player-time" id="time-total">0:00</div>
+        </div>
+      </div>
+
+      <div class="player-right">
+        <button id="playPause" class="primary">Play</button>
+        <a id="downloadMp3" href="#" download>MP3</a>
+        <a id="downloadWav" href="#" download>WAV</a>
+      </div>
+
+      <audio id="audio"></audio>
+    </div>
   </footer>
 
   <script>
@@ -58,19 +78,30 @@
 
     const audio = document.getElementById("audio");
     const player = document.getElementById("player");
+
     const titleEl = document.getElementById("player-title");
     const playPauseBtn = document.getElementById("playPause");
+
     const downloadMp3 = document.getElementById("downloadMp3");
     const downloadWav = document.getElementById("downloadWav");
 
-    // state
+    const progress = document.getElementById("progress");
+    const timeNowEl = document.getElementById("time-now");
+    const timeTotalEl = document.getElementById("time-total");
+
     let isPlaying = false;
     let activeRow = null;
     let activePlayBtn = null;
-    let activeTrackKey = null; // unique key for track row
+    let activeTrackKey = null;
+
+    function fmtTime(sec) {
+      if (!isFinite(sec) || sec < 0) return "0:00";
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${m}:${String(s).padStart(2, "0")}`;
+    }
 
     function setActiveRow(row, playBtn, trackKey, trackTitle, mp3, wav) {
-      // clear previous row state
       if (activeRow) activeRow.classList.remove("is-playing");
       if (activePlayBtn) activePlayBtn.textContent = "Play";
 
@@ -78,7 +109,6 @@
       activePlayBtn = playBtn;
       activeTrackKey = trackKey;
 
-      // apply new state
       if (activeRow) activeRow.classList.add("is-playing");
       if (activePlayBtn) activePlayBtn.textContent = "Pause";
 
@@ -88,12 +118,12 @@
       downloadMp3.setAttribute("download", (trackTitle || "track") + ".mp3");
 
       if (wav) {
+        downloadWav.hidden = false;
         downloadWav.href = wav;
         downloadWav.setAttribute("download", (trackTitle || "track") + ".wav");
-        downloadWav.style.display = "";
       } else {
+        downloadWav.hidden = true;
         downloadWav.href = "#";
-        downloadWav.style.display = "none";
       }
 
       player.hidden = false;
@@ -112,23 +142,22 @@
       audio.play();
       isPlaying = true;
       playPauseBtn.textContent = "Pause";
+      playPauseBtn.classList.add("primary");
     }
 
     function pausePlayback() {
       audio.pause();
       isPlaying = false;
       playPauseBtn.textContent = "Play";
+      playPauseBtn.classList.add("primary");
     }
 
     function toggleFromRow(row, playBtn, track) {
       const trackTitle = track.title || "—";
       const mp3 = track.mp3;
       const wav = track.wav || null;
-
-      // create a stable key per row (project/title + mp3 path)
       const trackKey = (trackTitle + "|" + mp3);
 
-      // if clicking the currently active track
       if (activeTrackKey === trackKey) {
         if (isPlaying) {
           pausePlayback();
@@ -144,12 +173,10 @@
         return;
       }
 
-      // otherwise: switch track
       setActiveRow(row, playBtn, trackKey, trackTitle, mp3, wav);
       playNewSource(mp3);
     }
 
-    // footer play/pause toggles current audio
     playPauseBtn.addEventListener("click", () => {
       if (!audio.src) return;
 
@@ -166,11 +193,53 @@
       }
     });
 
-    // when track ends: reset row visuals (but keep player visible)
+    // progress update
+    let isScrubbing = false;
+
+    audio.addEventListener("loadedmetadata", () => {
+      timeTotalEl.textContent = fmtTime(audio.duration);
+      timeNowEl.textContent = fmtTime(0);
+      progress.value = 0;
+    });
+
+    audio.addEventListener("timeupdate", () => {
+      if (isScrubbing) return;
+
+      timeNowEl.textContent = fmtTime(audio.currentTime);
+      const d = audio.duration || 0;
+      if (d > 0) {
+        const v = Math.round((audio.currentTime / d) * 1000);
+        progress.value = String(v);
+      } else {
+        progress.value = "0";
+      }
+    });
+
+    progress.addEventListener("pointerdown", () => { isScrubbing = true; });
+    progress.addEventListener("pointerup", () => { isScrubbing = false; });
+
+    progress.addEventListener("input", () => {
+      const d = audio.duration || 0;
+      if (d <= 0) return;
+      const v = Number(progress.value) / 1000;
+      const t = v * d;
+      timeNowEl.textContent = fmtTime(t);
+    });
+
+    progress.addEventListener("change", () => {
+      const d = audio.duration || 0;
+      if (d <= 0) return;
+      const v = Number(progress.value) / 1000;
+      audio.currentTime = v * d;
+    });
+
     audio.addEventListener("ended", () => {
       isPlaying = false;
       playPauseBtn.textContent = "Play";
       clearActiveRow();
+
+      timeNowEl.textContent = "0:00";
+      progress.value = "0";
     });
 
     function renderProjects(data) {
@@ -203,7 +272,6 @@
           playBtn.textContent = "Play";
           playBtn.addEventListener("click", () => toggleFromRow(row, playBtn, track));
 
-          // per-track direct download buttons (always available)
           const dlMp3 = document.createElement("a");
           dlMp3.textContent = "MP3";
           dlMp3.href = track.mp3 || "#";
