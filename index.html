@@ -7,10 +7,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Maneit Music Node — sound, structure, emotion." />
 
-  <!-- Core styles -->
-  <link rel="stylesheet" href="/css/core.css" />
-  <link rel="stylesheet" href="/css/layout.css" />
-  <link rel="stylesheet" href="/css/player.css" />
+  <!-- Core styles (RELATIVE PATHS for GitHub Pages) -->
+  <link rel="stylesheet" href="css/core.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/player.css" />
 </head>
 
 <body>
@@ -46,15 +46,13 @@
   <!-- PROJECT / TRACK LIST -->
   <!-- ========================= -->
   <main class="content">
-
     <section class="projects" id="projects">
-      <!-- injected from tracks.json later -->
+      <!-- injected from data/tracks.json -->
     </section>
-
   </main>
 
   <!-- ========================= -->
-  <!-- PLAYER (FOCUS MODE) -->
+  <!-- PLAYER -->
   <!-- ========================= -->
   <footer class="player" id="player" hidden>
     <div class="player-info">
@@ -70,9 +68,9 @@
     <audio id="audio"></audio>
   </footer>
 
-  <!-- Scripts (kommer senere) -->
-  <script src="/js/player.js" defer></script>
-  <script src="/js/ui.js" defer></script>
+  <!-- Scripts (RELATIVE PATHS for GitHub Pages) -->
+  <script src="js/player.js" defer></script>
+  <script src="js/ui.js" defer></script>
 
 </body>
 </html>
