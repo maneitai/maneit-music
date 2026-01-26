@@ -1,8 +1,8 @@
 /* ============================= */
-/* MANEIT MUSIC — UI */
+/* MANEIT MUSIC — UI (v2 paths) */
 /* ============================= */
 
-fetch("/data/tracks.json")
+fetch("data/tracks.json")
   .then(res => res.json())
   .then(data => {
     const container = document.getElementById("projects");
