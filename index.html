@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Maneit Music Node — sound, structure, emotion." />
 
-  <!-- Core styles (RELATIVE PATHS for GitHub Pages) -->
+  <!-- RELATIVE paths (GitHub Pages safe) -->
   <link rel="stylesheet" href="css/core.css" />
   <link rel="stylesheet" href="css/layout.css" />
   <link rel="stylesheet" href="css/player.css" />
@@ -68,9 +68,143 @@
     <audio id="audio"></audio>
   </footer>
 
-  <!-- Scripts (RELATIVE PATHS for GitHub Pages) -->
-  <script src="js/player.js" defer></script>
-  <script src="js/ui.js" defer></script>
+  <!-- ========================= -->
+  <!-- INLINE JS (no external deps) -->
+  <!-- ========================= -->
+  <script>
+    // -------- Elements
+    const projectsEl = document.getElementById("projects");
+
+    const audio = document.getElementById("audio");
+    const player = document.getElementById("player");
+    const titleEl = document.getElementById("player-title");
+    const playPauseBtn = document.getElementById("playPause");
+    const downloadMp3 = document.getElementById("downloadMp3");
+    const downloadWav = document.getElementById("downloadWav");
+
+    let isPlaying = false;
+
+    function playTrack(track) {
+      if (!track || !track.mp3) return;
+
+      audio.src = track.mp3;
+      audio.play();
+
+      titleEl.textContent = track.title || "—";
+
+      // direct downloads
+      downloadMp3.href = track.mp3;
+      downloadMp3.setAttribute("download", (track.title || "track") + ".mp3");
+
+      if (track.wav) {
+        downloadWav.href = track.wav;
+        downloadWav.setAttribute("download", (track.title || "track") + ".wav");
+        downloadWav.style.display = "";
+      } else {
+        // if no wav, hide the button
+        downloadWav.href = "#";
+        downloadWav.style.display = "none";
+      }
+
+      playPauseBtn.textContent = "Pause";
+      player.hidden = false;
+      isPlaying = true;
+    }
+
+    playPauseBtn.addEventListener("click", () => {
+      if (!audio.src) return;
+
+      if (isPlaying) {
+        audio.pause();
+        playPauseBtn.textContent = "Play";
+      } else {
+        audio.play();
+        playPauseBtn.textContent = "Pause";
+      }
+      isPlaying = !isPlaying;
+    });
+
+    // Stop state when track ends
+    audio.addEventListener("ended", () => {
+      isPlaying = false;
+      playPauseBtn.textContent = "Play";
+    });
+
+    // -------- Render UI
+    function renderProjects(data) {
+      projectsEl.innerHTML = "";
+
+      if (!data || !Array.isArray(data.projects) || data.projects.length === 0) {
+        projectsEl.innerHTML = "<div class='project'><div class='muted mono'>No projects found.</div></div>";
+        return;
+      }
+
+      data.projects.forEach(project => {
+        const section = document.createElement("section");
+        section.className = "project";
+
+        const title = document.createElement("h3");
+        title.className = "project-title";
+        title.textContent = project.title || project.id || "Project";
+        section.appendChild(title);
+
+        const tracks = Array.isArray(project.tracks) ? project.tracks : [];
+        tracks.forEach(track => {
+          const row = document.createElement("div");
+          row.className = "track";
+
+          const left = document.createElement("span");
+          left.className = "track-title";
+          left.textContent = track.title || "Untitled";
+
+          const actions = document.createElement("div");
+          actions.className = "track-actions";
+
+          const playBtn = document.createElement("button");
+          playBtn.textContent = "Play";
+          playBtn.addEventListener("click", () => playTrack(track));
+
+          const dlMp3 = document.createElement("a");
+          dlMp3.textContent = "MP3";
+          dlMp3.href = track.mp3 || "#";
+          dlMp3.setAttribute("download", (track.title || "track") + ".mp3");
+
+          const dlWav = document.createElement("a");
+          dlWav.textContent = "WAV";
+          if (track.wav) {
+            dlWav.href = track.wav;
+            dlWav.setAttribute("download", (track.title || "track") + ".wav");
+          } else {
+            dlWav.href = "#";
+            dlWav.style.display = "none";
+          }
+
+          actions.appendChild(playBtn);
+          actions.appendChild(dlMp3);
+          actions.appendChild(dlWav);
+
+          row.appendChild(left);
+          row.appendChild(actions);
+          section.appendChild(row);
+        });
+
+        projectsEl.appendChild(section);
+      });
+    }
+
+    // -------- Load data (RELATIVE path)
+    fetch("data/tracks.json")
+      .then(res => {
+        if (!res.ok) throw new Error("tracks.json not found: " + res.status);
+        return res.json();
+      })
+      .then(renderProjects)
+      .catch(err => {
+        projectsEl.innerHTML =
+          "<div class='project'><div class='mono muted'>Failed to load data/tracks.json</div>" +
+          "<div class='mono muted' style='margin-top:8px; opacity:.8;'>" + String(err.message) + "</div></div>";
+      });
+  </script>
 
 </body>
 </html>
