@@ -7,7 +7,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Maneit Music Node — sound, structure, emotion." />
 
-  <!-- RELATIVE paths (GitHub Pages safe) -->
   <link rel="stylesheet" href="css/core.css" />
   <link rel="stylesheet" href="css/layout.css" />
   <link rel="stylesheet" href="css/player.css" />
@@ -15,9 +14,6 @@
 
 <body>
 
-  <!-- ========================= -->
-  <!-- HEADER -->
-  <!-- ========================= -->
   <header class="site-header">
     <div class="brand">
       <div class="brand-kicker">MANEIT</div>
@@ -31,9 +27,6 @@
     </nav>
   </header>
 
-  <!-- ========================= -->
-  <!-- HERO -->
-  <!-- ========================= -->
   <section class="hero">
     <h2>Sound.<br>Structure.<br>Emotion.</h2>
     <p>
@@ -42,18 +35,10 @@
     </p>
   </section>
 
-  <!-- ========================= -->
-  <!-- PROJECT / TRACK LIST -->
-  <!-- ========================= -->
   <main class="content">
-    <section class="projects" id="projects">
-      <!-- injected from data/tracks.json -->
-    </section>
+    <section class="projects" id="projects"></section>
   </main>
 
-  <!-- ========================= -->
-  <!-- PLAYER -->
-  <!-- ========================= -->
   <footer class="player" id="player" hidden>
     <div class="player-info">
       <span id="player-title">—</span>
@@ -68,11 +53,7 @@
     <audio id="audio"></audio>
   </footer>
 
-  <!-- ========================= -->
-  <!-- INLINE JS (no external deps) -->
-  <!-- ========================= -->
   <script>
-    // -------- Elements
     const projectsEl = document.getElementById("projects");
 
     const audio = document.getElementById("audio");
@@ -82,55 +63,116 @@
     const downloadMp3 = document.getElementById("downloadMp3");
     const downloadWav = document.getElementById("downloadWav");
 
+    // state
     let isPlaying = false;
+    let activeRow = null;
+    let activePlayBtn = null;
+    let activeTrackKey = null; // unique key for track row
 
-    function playTrack(track) {
-      if (!track || !track.mp3) return;
+    function setActiveRow(row, playBtn, trackKey, trackTitle, mp3, wav) {
+      // clear previous row state
+      if (activeRow) activeRow.classList.remove("is-playing");
+      if (activePlayBtn) activePlayBtn.textContent = "Play";
 
-      audio.src = track.mp3;
-      audio.play();
+      activeRow = row;
+      activePlayBtn = playBtn;
+      activeTrackKey = trackKey;
 
-      titleEl.textContent = track.title || "—";
+      // apply new state
+      if (activeRow) activeRow.classList.add("is-playing");
+      if (activePlayBtn) activePlayBtn.textContent = "Pause";
 
-      // direct downloads
-      downloadMp3.href = track.mp3;
-      downloadMp3.setAttribute("download", (track.title || "track") + ".mp3");
+      titleEl.textContent = trackTitle || "—";
 
-      if (track.wav) {
-        downloadWav.href = track.wav;
-        downloadWav.setAttribute("download", (track.title || "track") + ".wav");
+      downloadMp3.href = mp3 || "#";
+      downloadMp3.setAttribute("download", (trackTitle || "track") + ".mp3");
+
+      if (wav) {
+        downloadWav.href = wav;
+        downloadWav.setAttribute("download", (trackTitle || "track") + ".wav");
         downloadWav.style.display = "";
       } else {
-        // if no wav, hide the button
         downloadWav.href = "#";
         downloadWav.style.display = "none";
       }
 
-      playPauseBtn.textContent = "Pause";
       player.hidden = false;
-      isPlaying = true;
     }
 
+    function clearActiveRow() {
+      if (activeRow) activeRow.classList.remove("is-playing");
+      if (activePlayBtn) activePlayBtn.textContent = "Play";
+      activeRow = null;
+      activePlayBtn = null;
+      activeTrackKey = null;
+    }
+
+    function playNewSource(mp3) {
+      audio.src = mp3;
+      audio.play();
+      isPlaying = true;
+      playPauseBtn.textContent = "Pause";
+    }
+
+    function pausePlayback() {
+      audio.pause();
+      isPlaying = false;
+      playPauseBtn.textContent = "Play";
+    }
+
+    function toggleFromRow(row, playBtn, track) {
+      const trackTitle = track.title || "—";
+      const mp3 = track.mp3;
+      const wav = track.wav || null;
+
+      // create a stable key per row (project/title + mp3 path)
+      const trackKey = (trackTitle + "|" + mp3);
+
+      // if clicking the currently active track
+      if (activeTrackKey === trackKey) {
+        if (isPlaying) {
+          pausePlayback();
+          if (activePlayBtn) activePlayBtn.textContent = "Play";
+          if (activeRow) activeRow.classList.remove("is-playing");
+        } else {
+          audio.play();
+          isPlaying = true;
+          playPauseBtn.textContent = "Pause";
+          if (activePlayBtn) activePlayBtn.textContent = "Pause";
+          if (activeRow) activeRow.classList.add("is-playing");
+        }
+        return;
+      }
+
+      // otherwise: switch track
+      setActiveRow(row, playBtn, trackKey, trackTitle, mp3, wav);
+      playNewSource(mp3);
+    }
+
+    // footer play/pause toggles current audio
     playPauseBtn.addEventListener("click", () => {
       if (!audio.src) return;
 
       if (isPlaying) {
-        audio.pause();
-        playPauseBtn.textContent = "Play";
+        pausePlayback();
+        if (activePlayBtn) activePlayBtn.textContent = "Play";
+        if (activeRow) activeRow.classList.remove("is-playing");
       } else {
         audio.play();
+        isPlaying = true;
         playPauseBtn.textContent = "Pause";
+        if (activePlayBtn) activePlayBtn.textContent = "Pause";
+        if (activeRow) activeRow.classList.add("is-playing");
       }
-      isPlaying = !isPlaying;
     });
 
-    // Stop state when track ends
+    // when track ends: reset row visuals (but keep player visible)
     audio.addEventListener("ended", () => {
       isPlaying = false;
       playPauseBtn.textContent = "Play";
+      clearActiveRow();
     });
 
-    // -------- Render UI
     function renderProjects(data) {
       projectsEl.innerHTML = "";
 
@@ -143,10 +185,7 @@
         const section = document.createElement("section");
         section.className = "project";
 
-        const title = document.createElement("h3");
-        title.className = "project-title";
-        title.textContent = project.title || project.id || "Project";
-        section.appendChild(title);
+        section.innerHTML = `<h3 class="project-title">${project.title || project.id || "Project"}</h3>`;
 
         const tracks = Array.isArray(project.tracks) ? project.tracks : [];
         tracks.forEach(track => {
@@ -162,8 +201,9 @@
 
           const playBtn = document.createElement("button");
           playBtn.textContent = "Play";
-          playBtn.addEventListener("click", () => playTrack(track));
+          playBtn.addEventListener("click", () => toggleFromRow(row, playBtn, track));
 
+          // per-track direct download buttons (always available)
           const dlMp3 = document.createElement("a");
           dlMp3.textContent = "MP3";
           dlMp3.href = track.mp3 || "#";
@@ -192,7 +232,6 @@
       });
     }
 
-    // -------- Load data (RELATIVE path)
     fetch("data/tracks.json")
       .then(res => {
         if (!res.ok) throw new Error("tracks.json not found: " + res.status);
