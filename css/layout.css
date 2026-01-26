@@ -1,5 +1,5 @@
 /* ============================= */
-/* MANEIT MUSIC — LAYOUT (v2) */
+/* MANEIT MUSIC — LAYOUT (v3) */
 /* ============================= */
 
 /* -------- Global width control -------- */
@@ -50,7 +50,6 @@
 .hero {
   max-width: var(--max-width);
   margin: 0 auto;
-
   padding: var(--space-xl) var(--space-lg);
 }
 
@@ -98,6 +97,7 @@
 
 /* -------- Track row -------- */
 .track {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -118,6 +118,29 @@
 .track-actions {
   display: flex;
   gap: var(--space-sm);
+}
+
+/* -------- Now playing state (subtle) -------- */
+.track.is-playing .track-title {
+  color: var(--color-text);
+}
+
+.track.is-playing::before {
+  content: "";
+  position: absolute;
+  left: -14px;               /* sits just inside the card edge */
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--color-accent);
+  opacity: 0.8;
+}
+
+/* make the active play button look "armed" */
+.track.is-playing button {
+  border-color: rgba(159,183,255,0.35);
+  background: rgba(159,183,255,0.08);
 }
 
 /* -------- Footer player -------- */
