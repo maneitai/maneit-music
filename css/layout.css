@@ -1,13 +1,23 @@
 /* ============================= */
-/* MANEIT MUSIC — LAYOUT */
+/* MANEIT MUSIC — LAYOUT (v2) */
 /* ============================= */
 
+/* -------- Global width control -------- */
+:root {
+  --max-width: 980px;
+}
+
+/* -------- Header -------- */
 .site-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   padding: var(--space-lg);
   border-bottom: 1px solid var(--color-line);
+
+  max-width: var(--max-width);
+  margin: 0 auto;
 }
 
 .brand {
@@ -36,13 +46,12 @@
   color: var(--color-muted);
 }
 
-.nav-item {
-  cursor: default;
-}
-
+/* -------- Hero -------- */
 .hero {
+  max-width: var(--max-width);
+  margin: 0 auto;
+
   padding: var(--space-xl) var(--space-lg);
-  max-width: 900px;
 }
 
 .hero h2 {
@@ -55,17 +64,21 @@
   font-size: 14px;
 }
 
+/* -------- Main content -------- */
 .content {
+  max-width: var(--max-width);
+  margin: 0 auto;
   padding: var(--space-lg);
 }
 
+/* -------- Projects -------- */
 .projects {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: var(--space-lg);
 }
 
-/* Project cards */
+/* -------- Project card -------- */
 .project {
   background: linear-gradient(
     180deg,
@@ -83,10 +96,12 @@
   margin-bottom: var(--space-sm);
 }
 
+/* -------- Track row -------- */
 .track {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
+
   padding: var(--space-sm) 0;
   border-top: 1px solid var(--color-line);
 }
@@ -99,7 +114,14 @@
   font-size: 13px;
 }
 
+/* -------- Track actions -------- */
 .track-actions {
   display: flex;
   gap: var(--space-sm);
+}
+
+/* -------- Footer player -------- */
+.player {
+  max-width: var(--max-width);
+  margin: 0 auto;
 }
