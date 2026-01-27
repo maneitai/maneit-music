@@ -5,6 +5,14 @@
       "title": "ISKALD",
       "tracks": [
         {
+          "title": "Holder Linja",
+          "mp3": "music/Iskald/ISKALD — “HOLDER LINJA”.mp3"
+        },
+        {
+          "title": "Når Det Blir Stille",
+          "mp3": "music/Iskald/ISKALD — “NÅR DET BLIR STILLE”.mp3"
+        },
+        {
           "title": "Narcotics",
           "mp3": "music/Iskald/Iskald - Narcotics.mp3"
         },
@@ -30,13 +38,29 @@
         }
       ]
     },
+
     {
-      "id": "aoma",
-      "title": "AOMA",
+      "id": "retning",
+      "title": "RETNING",
       "tracks": [
         {
-          "title": "AOMA",
-          "mp3": "music/aoma/AOMA.mp3"
+          "title": "Move With the Light",
+          "mp3": "music/RETNING/RETNING - MOVE WITH THE LIGHT.mp3"
+        }
+      ]
+    },
+
+    {
+      "id": "stal",
+      "title": "STÅL",
+      "tracks": [
+        {
+          "title": "Built to Hold",
+          "mp3": "music/STÅL/STÅL - Built To Hold.mp3"
+        },
+        {
+          "title": "When the Weight Decides",
+          "mp3": "music/STÅL/STÅL - When the weight decides.mp3"
         }
       ]
     }
