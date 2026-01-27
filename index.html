@@ -12,13 +12,12 @@
   <link rel="stylesheet" href="css/player.css" />
 
   <style>
-    /* tiny helper: smooth anchor scroll */
     html { scroll-behavior: smooth; }
-
-    /* keep anchors from hiding under header line */
     .anchor { scroll-margin-top: 24px; }
 
-    /* download note (minimal, fits your theme) */
+    .nav-link { cursor: pointer; user-select: none; }
+    .nav-link:hover { color: rgba(232,237,247,0.92); }
+
     .download-note {
       background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
       border: 1px solid var(--color-line);
@@ -43,13 +42,22 @@
       font-size: 12px;
       color: rgba(154,163,178,0.95);
     }
-    .nav-link {
-      cursor: pointer;
-      user-select: none;
-    }
-    .nav-link:hover {
+
+    /* Visible audio error banner */
+    .audio-error {
+      max-width: var(--max-width);
+      margin: 14px auto 0;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255, 90, 90, 0.08);
       color: rgba(232,237,247,0.92);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      display: none;
+      white-space: pre-wrap;
     }
+    .audio-error strong { color: rgba(255, 170, 170, 0.95); }
   </style>
 </head>
 
@@ -68,6 +76,8 @@
     </nav>
   </header>
 
+  <div class="audio-error" id="audioError"></div>
+
   <section class="hero">
     <h2>Sound.<br>Structure.<br>Emotion.</h2>
     <p>
@@ -77,7 +87,6 @@
   </section>
 
   <main class="content">
-    <!-- anchors -->
     <div id="listen" class="anchor"></div>
     <div id="projects" class="anchor"></div>
 
@@ -91,15 +100,14 @@
       <p>
         Every track is available as a direct download.
         Use the buttons next to each track:
-        <span class="mono">MP3</span> for quick listening and
-        <span class="mono">WAV</span> for lossless.
+        <span class="mono">MP3</span> for quick listening.
       </p>
       <p class="mono" style="margin-top:10px;">
         Bulk downloads (ZIP per project) can be added later.
       </p>
     </section>
 
-    <div style="height: 90px;"></div> <!-- breathing room above fixed player -->
+    <div style="height: 90px;"></div>
   </main>
 
   <!-- PLAYER v2 -->
@@ -129,15 +137,14 @@
       <div class="player-right">
         <button id="playPause" class="primary">Play</button>
         <a id="downloadMp3" href="#" download>MP3</a>
-        <a id="downloadWav" href="#" download>WAV</a>
       </div>
 
-      <audio id="audio"></audio>
+      <audio id="audio" preload="metadata"></audio>
     </div>
   </footer>
 
   <script>
-    // ===== Nav jump (real behavior) =====
+    // ===== Nav jump =====
     document.querySelectorAll("[data-jump]").forEach(el => {
       el.addEventListener("click", () => {
         const sel = el.getAttribute("data-jump");
@@ -156,17 +163,27 @@
     const playPauseBtn = document.getElementById("playPause");
 
     const downloadMp3 = document.getElementById("downloadMp3");
-    const downloadWav = document.getElementById("downloadWav");
 
     const progress = document.getElementById("progress");
     const timeNowEl = document.getElementById("time-now");
     const timeTotalEl = document.getElementById("time-total");
+
+    const audioError = document.getElementById("audioError");
 
     // ===== State =====
     let isPlaying = false;
     let activeRow = null;
     let activePlayBtn = null;
     let activeTrackKey = null;
+
+    function showError(msg) {
+      audioError.style.display = "block";
+      audioError.innerHTML = `<strong>AUDIO ERROR</strong>\n${msg}`;
+    }
+    function clearError() {
+      audioError.style.display = "none";
+      audioError.textContent = "";
+    }
 
     function fmtTime(sec) {
       if (!isFinite(sec) || sec < 0) return "0:00";
@@ -175,7 +192,13 @@
       return `${m}:${String(s).padStart(2, "0")}`;
     }
 
-    function setActiveRow(row, playBtn, trackKey, trackTitle, mp3, wav) {
+    function safeUrl(path) {
+      // Makes "Iskald - Narcotics.mp3" work reliably
+      // Also safe if path already has %20 etc.
+      try { return encodeURI(path); } catch { return path; }
+    }
+
+    function setActiveRow(row, playBtn, trackKey, trackTitle, mp3Path) {
       if (activeRow) activeRow.classList.remove("is-playing");
       if (activePlayBtn) activePlayBtn.textContent = "Play";
 
@@ -188,17 +211,10 @@
 
       titleEl.textContent = trackTitle || "—";
 
-      downloadMp3.href = mp3 || "#";
+      // download button
+      const mp3Url = safeUrl(mp3Path || "#");
+      downloadMp3.href = mp3Url;
       downloadMp3.setAttribute("download", (trackTitle || "track") + ".mp3");
-
-      if (wav) {
-        downloadWav.hidden = false;
-        downloadWav.href = wav;
-        downloadWav.setAttribute("download", (trackTitle || "track") + ".wav");
-      } else {
-        downloadWav.hidden = true;
-        downloadWav.href = "#";
-      }
 
       player.hidden = false;
     }
@@ -211,11 +227,24 @@
       activeTrackKey = null;
     }
 
-    function playNewSource(mp3) {
-      audio.src = mp3;
-      audio.play();
-      isPlaying = true;
-      playPauseBtn.textContent = "Pause";
+    async function playNewSource(mp3Path) {
+      clearError();
+
+      const mp3Url = safeUrl(mp3Path);
+      audio.src = mp3Url;
+
+      console.log("Playing:", mp3Url);
+
+      try {
+        await audio.play();
+        isPlaying = true;
+        playPauseBtn.textContent = "Pause";
+      } catch (e) {
+        // This catches autoplay blocks and load errors in some browsers
+        isPlaying = false;
+        playPauseBtn.textContent = "Play";
+        showError(`play() failed.\n${String(e)}\n\nURL:\n${mp3Url}`);
+      }
     }
 
     function pausePlayback() {
@@ -227,8 +256,12 @@
     function toggleFromRow(row, playBtn, track) {
       const trackTitle = track.title || "—";
       const mp3 = track.mp3;
-      const wav = track.wav || null;
       const trackKey = (trackTitle + "|" + mp3);
+
+      if (!mp3) {
+        showError(`Track has no mp3 path.\nTitle: ${trackTitle}`);
+        return;
+      }
 
       if (activeTrackKey === trackKey) {
         if (isPlaying) {
@@ -236,16 +269,19 @@
           if (activePlayBtn) activePlayBtn.textContent = "Play";
           if (activeRow) activeRow.classList.remove("is-playing");
         } else {
-          audio.play();
-          isPlaying = true;
-          playPauseBtn.textContent = "Pause";
-          if (activePlayBtn) activePlayBtn.textContent = "Pause";
-          if (activeRow) activeRow.classList.add("is-playing");
+          audio.play().then(() => {
+            isPlaying = true;
+            playPauseBtn.textContent = "Pause";
+            if (activePlayBtn) activePlayBtn.textContent = "Pause";
+            if (activeRow) activeRow.classList.add("is-playing");
+          }).catch(e => {
+            showError(`play() failed.\n${String(e)}\n\nURL:\n${audio.src}`);
+          });
         }
         return;
       }
 
-      setActiveRow(row, playBtn, trackKey, trackTitle, mp3, wav);
+      setActiveRow(row, playBtn, trackKey, trackTitle, mp3);
       playNewSource(mp3);
     }
 
@@ -258,18 +294,28 @@
         if (activePlayBtn) activePlayBtn.textContent = "Play";
         if (activeRow) activeRow.classList.remove("is-playing");
       } else {
-        audio.play();
-        isPlaying = true;
-        playPauseBtn.textContent = "Pause";
-        if (activePlayBtn) activePlayBtn.textContent = "Pause";
-        if (activeRow) activeRow.classList.add("is-playing");
+        audio.play().then(() => {
+          isPlaying = true;
+          playPauseBtn.textContent = "Pause";
+          if (activePlayBtn) activePlayBtn.textContent = "Pause";
+          if (activeRow) activeRow.classList.add("is-playing");
+        }).catch(e => {
+          showError(`play() failed.\n${String(e)}\n\nURL:\n${audio.src}`);
+        });
       }
+    });
+
+    // ===== Audio load errors (this will catch 404 / decode issues) =====
+    audio.addEventListener("error", () => {
+      const code = audio.error ? audio.error.code : "unknown";
+      showError(`Audio element error. code=${code}\n\nURL:\n${audio.src}\n\nLikely causes:\n- 404 (wrong path/case)\n- spaces not encoded\n- file too big / not served yet`);
     });
 
     // ===== Progress =====
     let isScrubbing = false;
 
     audio.addEventListener("loadedmetadata", () => {
+      clearError();
       timeTotalEl.textContent = fmtTime(audio.duration);
       timeNowEl.textContent = fmtTime(0);
       progress.value = 0;
@@ -277,7 +323,6 @@
 
     audio.addEventListener("timeupdate", () => {
       if (isScrubbing) return;
-
       timeNowEl.textContent = fmtTime(audio.currentTime);
       const d = audio.duration || 0;
       progress.value = d > 0 ? String(Math.round((audio.currentTime / d) * 1000)) : "0";
@@ -303,7 +348,6 @@
       isPlaying = false;
       playPauseBtn.textContent = "Play";
       clearActiveRow();
-
       timeNowEl.textContent = "0:00";
       progress.value = "0";
     });
@@ -341,22 +385,11 @@
 
           const dlMp3 = document.createElement("a");
           dlMp3.textContent = "MP3";
-          dlMp3.href = track.mp3 || "#";
+          dlMp3.href = safeUrl(track.mp3 || "#");
           dlMp3.setAttribute("download", (track.title || "track") + ".mp3");
-
-          const dlWav = document.createElement("a");
-          dlWav.textContent = "WAV";
-          if (track.wav) {
-            dlWav.href = track.wav;
-            dlWav.setAttribute("download", (track.title || "track") + ".wav");
-          } else {
-            dlWav.href = "#";
-            dlWav.style.display = "none";
-          }
 
           actions.appendChild(playBtn);
           actions.appendChild(dlMp3);
-          actions.appendChild(dlWav);
 
           row.appendChild(left);
           row.appendChild(actions);
