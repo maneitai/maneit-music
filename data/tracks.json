@@ -5,14 +5,8 @@
       "title": "ISKALD",
       "tracks": [
         {
-          "title": "Frozen Breath",
-          "mp3": "/music/iskald/01-frozen-breath.mp3",
-          "wav": "/music/iskald/01-frozen-breath.wav"
-        },
-        {
-          "title": "White Noise",
-          "mp3": "/music/iskald/02-white-noise.mp3",
-          "wav": "/music/iskald/02-white-noise.wav"
+          "title": "Narcotics",
+          "mp3": "music/iskald/Iskald - Narcotics.mp3"
         }
       ]
     },
@@ -21,9 +15,8 @@
       "title": "AOMA",
       "tracks": [
         {
-          "title": "Wolfpack Protocol",
-          "mp3": "/music/aoma/aoma-warcall.mp3",
-          "wav": "/music/aoma/aoma-warcall.wav"
+          "title": "AOMA",
+          "mp3": "music/aoma/AOMA.mp3"
         }
       ]
     }
