@@ -58,6 +58,120 @@
       white-space: pre-wrap;
     }
     .audio-error strong { color: rgba(255, 170, 170, 0.95); }
+
+    /* ===== Added: player controls v2 (shuffle/repeat/prev/next/lyrics) ===== */
+    .player-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .player-right .mini {
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.03);
+      color: rgba(232,237,247,0.92);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .06s ease, background .12s ease, border-color .12s ease;
+    }
+    .player-right .mini:hover { background: rgba(255,255,255,0.06); }
+    .player-right .mini:active { transform: translateY(1px); }
+    .player-right .mini.on {
+      border-color: rgba(110,231,255,0.35);
+      background: rgba(110,231,255,0.12);
+    }
+
+    /* ===== Added: Visualizer + Lyrics panel ===== */
+    .player-aux {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 10px 0 0;
+    }
+
+    .viz-wrap {
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.18);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: none;
+      margin: 10px 0 0;
+    }
+    .viz-wrap.show { display: block; }
+    canvas#viz {
+      width: 100%;
+      height: 120px;
+      display: block;
+    }
+    .viz-hint {
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: rgba(154,163,178,0.95);
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .lyrics-panel {
+      border: 1px solid rgba(255,255,255,0.10);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: none;
+      margin: 10px 0 0;
+    }
+    .lyrics-panel.show { display: block; }
+
+    .lyrics-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: rgba(232,237,247,0.92);
+    }
+    .lyrics-head .sub {
+      color: rgba(154,163,178,0.95);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+    .lyrics-head .right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .lyrics-head label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(154,163,178,0.95);
+      font-size: 11px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .lyrics-body {
+      max-height: 260px;
+      overflow: auto;
+      padding: 10px 12px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.55;
+      color: rgba(232,237,247,0.90);
+      white-space: pre-wrap;
+    }
+    .ly-line {
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+    .ly-line:hover { background: rgba(255,255,255,0.03); }
+    .ly-line.active {
+      border-color: rgba(110,231,255,0.25);
+      background: rgba(110,231,255,0.10);
+    }
+    .ly-empty { color: rgba(154,163,178,0.95); }
   </style>
 </head>
 
@@ -135,11 +249,48 @@
       </div>
 
       <div class="player-right">
+        <!-- Added: Prev / Next -->
+        <button id="prevBtn" class="mini" type="button" title="Previous">Prev</button>
+
         <button id="playPause" class="primary">Play</button>
+
+        <button id="nextBtn" class="mini" type="button" title="Next">Next</button>
+
+        <!-- Added: Shuffle / Repeat / Lyrics / Viz -->
+        <button id="shuffleBtn" class="mini" type="button" aria-pressed="false" title="Shuffle (global)">Shuffle</button>
+        <button id="repeatBtn" class="mini" type="button" data-mode="off" title="Repeat mode">Repeat: Off</button>
+        <button id="lyricsBtn" class="mini" type="button" aria-expanded="false" title="Lyrics">Lyrics</button>
+        <button id="vizBtn" class="mini" type="button" aria-expanded="false" title="Visualizer">Viz</button>
+
+        <!-- Existing -->
         <a id="downloadMp3" href="#" download>MP3</a>
       </div>
 
       <audio id="audio" preload="metadata"></audio>
+    </div>
+
+    <!-- Added: Aux area (Visualizer + Lyrics) -->
+    <div class="player-aux">
+      <div class="viz-wrap" id="vizWrap" aria-hidden="true">
+        <canvas id="viz" width="1200" height="200"></canvas>
+        <div class="viz-hint">Real-time visualizer (Web Audio API). Starts after first play.</div>
+      </div>
+
+      <div class="lyrics-panel" id="lyricsPanel" aria-hidden="true">
+        <div class="lyrics-head">
+          <div>
+            <div id="lyricsTitle">LYRICS</div>
+            <div class="sub" id="lyricsSub">—</div>
+          </div>
+          <div class="right">
+            <label><input type="checkbox" id="autoScroll" checked /> Auto-scroll</label>
+            <button id="lyricsClose" class="mini" type="button">Close</button>
+          </div>
+        </div>
+        <div class="lyrics-body" id="lyricsBody">
+          <div class="ly-empty">No lyrics loaded.</div>
+        </div>
+      </div>
     </div>
   </footer>
 
@@ -170,11 +321,50 @@
 
     const audioError = document.getElementById("audioError");
 
+    // ===== Added: new controls =====
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const shuffleBtn = document.getElementById("shuffleBtn");
+    const repeatBtn = document.getElementById("repeatBtn");
+    const lyricsBtn = document.getElementById("lyricsBtn");
+    const vizBtn = document.getElementById("vizBtn");
+
+    const vizWrap = document.getElementById("vizWrap");
+    const vizCanvas = document.getElementById("viz");
+    const vizCtx = vizCanvas.getContext("2d");
+
+    const lyricsPanel = document.getElementById("lyricsPanel");
+    const lyricsTitle = document.getElementById("lyricsTitle");
+    const lyricsSub = document.getElementById("lyricsSub");
+    const lyricsBody = document.getElementById("lyricsBody");
+    const lyricsClose = document.getElementById("lyricsClose");
+    const autoScroll = document.getElementById("autoScroll");
+
     // ===== State =====
     let isPlaying = false;
     let activeRow = null;
     let activePlayBtn = null;
     let activeTrackKey = null;
+
+    // Added: global library + navigation state
+    let library = [];            // flattened tracks across all projects
+    let activeLibIndex = -1;     // index into library[]
+    let shuffleOn = false;
+    let repeatMode = "off";      // "off" | "one" | "all"
+
+    // Shuffle queue follows library indices
+    let queue = [];
+    let queuePos = 0;
+
+    // Lyrics state
+    let activeLyLine = -1;
+
+    // Visualizer (Web Audio API)
+    let audioCtx = null;
+    let analyser = null;
+    let srcNode = null;
+    let rafId = 0;
+    let vizOn = false;
 
     function showError(msg) {
       audioError.style.display = "block";
@@ -227,6 +417,145 @@
       activeTrackKey = null;
     }
 
+    function fisherYates(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function buildQueueFromCurrent() {
+      if (library.length === 0) return;
+      const indices = library.map((_, i) => i).filter(i => i !== activeLibIndex);
+      fisherYates(indices);
+      queue = [activeLibIndex, ...indices];
+      queuePos = 0;
+    }
+
+    function setShuffle(on) {
+      shuffleOn = !!on;
+      shuffleBtn.classList.toggle("on", shuffleOn);
+      shuffleBtn.setAttribute("aria-pressed", String(shuffleOn));
+      if (shuffleOn) buildQueueFromCurrent();
+    }
+
+    function cycleRepeat() {
+      const order = ["off", "one", "all"];
+      repeatMode = order[(order.indexOf(repeatMode) + 1) % order.length];
+      repeatBtn.dataset.mode = repeatMode;
+      repeatBtn.textContent =
+        repeatMode === "off" ? "Repeat: Off" :
+        repeatMode === "one" ? "Repeat: One" :
+        "Repeat: All";
+
+      // use native loop for repeat-one
+      audio.loop = (repeatMode === "one");
+    }
+
+    function openLyrics(open) {
+      const shouldOpen = !!open;
+      lyricsPanel.classList.toggle("show", shouldOpen);
+      lyricsPanel.setAttribute("aria-hidden", String(!shouldOpen));
+      lyricsBtn.setAttribute("aria-expanded", String(shouldOpen));
+      lyricsBtn.classList.toggle("on", shouldOpen);
+    }
+
+    function openViz(open) {
+      const shouldOpen = !!open;
+      vizOn = shouldOpen;
+      vizWrap.classList.toggle("show", shouldOpen);
+      vizWrap.setAttribute("aria-hidden", String(!shouldOpen));
+      vizBtn.setAttribute("aria-expanded", String(shouldOpen));
+      vizBtn.classList.toggle("on", shouldOpen);
+
+      if (!shouldOpen) {
+        stopViz();
+      } else {
+        // Start drawing if we already have analyser; otherwise it will start on first play
+        if (analyser) startViz();
+      }
+    }
+
+    async function ensureAudioGraph() {
+      // Must be created after a user gesture in most browsers
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === "suspended") {
+        try { await audioCtx.resume(); } catch {}
+      }
+      if (!analyser) {
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 2048;
+        analyser.smoothingTimeConstant = 0.82;
+      }
+      if (!srcNode) {
+        // connect audio element
+        try {
+          srcNode = audioCtx.createMediaElementSource(audio);
+          srcNode.connect(analyser);
+          analyser.connect(audioCtx.destination);
+        } catch (e) {
+          // createMediaElementSource can throw if called twice on same element
+          console.warn("Audio graph init failed:", e);
+        }
+      }
+    }
+
+    function startViz() {
+      if (!vizOn || !analyser) return;
+      cancelAnimationFrame(rafId);
+
+      const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+      const cssW = vizCanvas.clientWidth || 600;
+      const cssH = 120;
+
+      vizCanvas.width = cssW * dpr;
+      vizCanvas.height = cssH * dpr;
+      vizCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const data = new Uint8Array(analyser.frequencyBinCount);
+
+      const draw = () => {
+        rafId = requestAnimationFrame(draw);
+        analyser.getByteFrequencyData(data);
+
+        // clear
+        vizCtx.clearRect(0, 0, cssW, cssH);
+
+        // subtle background glow line
+        vizCtx.globalAlpha = 0.35;
+        vizCtx.fillStyle = "rgba(110,231,255,0.15)";
+        vizCtx.fillRect(0, cssH - 1, cssW, 1);
+        vizCtx.globalAlpha = 1;
+
+        const bars = 90;
+        const step = Math.floor(data.length / bars);
+        const barW = cssW / bars;
+
+        for (let i = 0; i < bars; i++) {
+          const v = data[i * step] / 255; // 0..1
+          const h = Math.max(2, v * cssH);
+
+          // gradient-ish by alpha (no hard colors)
+          vizCtx.globalAlpha = 0.20 + v * 0.70;
+          vizCtx.fillStyle = "rgba(232,237,247,0.95)";
+          vizCtx.fillRect(i * barW + 1, cssH - h, Math.max(1, barW - 2), h);
+        }
+        vizCtx.globalAlpha = 1;
+      };
+
+      draw();
+    }
+
+    function stopViz() {
+      cancelAnimationFrame(rafId);
+      rafId = 0;
+      // leave last frame or clear:
+      // vizCtx.clearRect(0,0,vizCanvas.clientWidth || 600, 120);
+    }
+
     async function playNewSource(mp3Path) {
       clearError();
 
@@ -236,11 +565,13 @@
       console.log("Playing:", mp3Url);
 
       try {
+        await ensureAudioGraph();
         await audio.play();
         isPlaying = true;
         playPauseBtn.textContent = "Pause";
+
+        if (vizOn) startViz();
       } catch (e) {
-        // This catches autoplay blocks and load errors in some browsers
         isPlaying = false;
         playPauseBtn.textContent = "Play";
         showError(`play() failed.\n${String(e)}\n\nURL:\n${mp3Url}`);
@@ -253,6 +584,103 @@
       playPauseBtn.textContent = "Play";
     }
 
+    function setActiveLibraryIndexByTrack(track) {
+      // track is library item
+      if (!track) return;
+      activeLibIndex = track.libIndex;
+      if (shuffleOn) buildQueueFromCurrent();
+
+      // update lyrics header context
+      lyricsSub.textContent = track.title || "—";
+      lyricsTitle.textContent = "LYRICS";
+      renderLyrics(track);
+    }
+
+    function renderLyrics(track) {
+      activeLyLine = -1;
+      lyricsBody.innerHTML = "";
+
+      const ly = track && track.lyrics ? track.lyrics : null;
+
+      if (!ly) {
+        const empty = document.createElement("div");
+        empty.className = "ly-empty";
+        empty.textContent = "No lyrics for this track (yet).";
+        lyricsBody.appendChild(empty);
+        return;
+      }
+
+      // Support: lyrics as string
+      if (typeof ly === "string") {
+        const div = document.createElement("div");
+        div.textContent = ly;
+        lyricsBody.appendChild(div);
+        return;
+      }
+
+      // Support: { text: "..." }
+      if (ly && typeof ly.text === "string") {
+        const div = document.createElement("div");
+        div.textContent = ly.text;
+        lyricsBody.appendChild(div);
+        return;
+      }
+
+      // Support: { lines: [{ t: 12.4, s: "line" }, ...] }
+      if (ly && Array.isArray(ly.lines)) {
+        ly.lines.forEach((line, idx) => {
+          const el = document.createElement("div");
+          el.className = "ly-line";
+          el.dataset.i = String(idx);
+          el.dataset.t = String(line.t ?? 0);
+          el.textContent = line.s ?? "";
+
+          el.addEventListener("click", () => {
+            if (typeof line.t === "number" && isFinite(line.t)) {
+              audio.currentTime = Math.max(0, line.t);
+            }
+          });
+
+          lyricsBody.appendChild(el);
+        });
+        return;
+      }
+
+      const empty = document.createElement("div");
+      empty.className = "ly-empty";
+      empty.textContent = "Lyrics format not recognized.";
+      lyricsBody.appendChild(empty);
+    }
+
+    function updateLyricsActiveLine() {
+      const track = library[activeLibIndex];
+      if (!track || !track.lyrics || !Array.isArray(track.lyrics.lines)) return;
+
+      const t = audio.currentTime || 0;
+      const lines = track.lyrics.lines;
+
+      // find last line where line.t <= current time
+      let idx = -1;
+      for (let i = 0; i < lines.length; i++) {
+        if (typeof lines[i].t === "number" && lines[i].t <= t) idx = i;
+      }
+      if (idx === activeLyLine) return;
+
+      // update DOM
+      const prev = lyricsBody.querySelector(".ly-line.active");
+      if (prev) prev.classList.remove("active");
+
+      const next = lyricsBody.querySelector(`.ly-line[data-i="${idx}"]`);
+      if (next) {
+        next.classList.add("active");
+        if (autoScroll.checked) {
+          // gentle auto-scroll
+          next.scrollIntoView({ block: "center", behavior: "smooth" });
+        }
+      }
+      activeLyLine = idx;
+    }
+
     function toggleFromRow(row, playBtn, track) {
       const trackTitle = track.title || "—";
       const mp3 = track.mp3;
@@ -263,17 +691,25 @@
         return;
       }
 
+      // Set global index for this track (needed for next/prev/shuffle)
+      if (typeof track.libIndex === "number") {
+        setActiveLibraryIndexByTrack(track);
+      }
+
       if (activeTrackKey === trackKey) {
         if (isPlaying) {
           pausePlayback();
           if (activePlayBtn) activePlayBtn.textContent = "Play";
           if (activeRow) activeRow.classList.remove("is-playing");
         } else {
-          audio.play().then(() => {
+          audio.play().then(async () => {
+            await ensureAudioGraph();
             isPlaying = true;
             playPauseBtn.textContent = "Pause";
             if (activePlayBtn) activePlayBtn.textContent = "Pause";
             if (activeRow) activeRow.classList.add("is-playing");
+
+            if (vizOn) startViz();
           }).catch(e => {
             showError(`play() failed.\n${String(e)}\n\nURL:\n${audio.src}`);
           });
@@ -285,8 +721,75 @@
       playNewSource(mp3);
     }
 
+    function playByLibraryIndex(idx) {
+      if (!library.length) return;
+      const t = library[idx];
+      if (!t) return;
+
+      activeLibIndex = idx;
+      if (shuffleOn) buildQueueFromCurrent();
+
+      // Update UI selection
+      setActiveRow(t.rowEl, t.playBtnEl, (t.title + "|" + t.mp3), t.title, t.mp3);
+      setActiveLibraryIndexByTrack(t);
+      playNewSource(t.mp3);
+    }
+
+    function nextTrack() {
+      if (!library.length) return;
+
+      if (shuffleOn) {
+        if (!queue.length) buildQueueFromCurrent();
+        queuePos++;
+
+        if (queuePos >= queue.length) {
+          if (repeatMode === "all") {
+            buildQueueFromCurrent();
+            queuePos = 0;
+          } else {
+            pausePlayback();
+            return;
+          }
+        }
+
+        playByLibraryIndex(queue[queuePos]);
+        return;
+      }
+
+      let idx = activeLibIndex + 1;
+      if (idx >= library.length) {
+        if (repeatMode === "all") idx = 0;
+        else { pausePlayback(); return; }
+      }
+      playByLibraryIndex(idx);
+    }
+
+    function prevTrack() {
+      if (!library.length) return;
+
+      // common behavior: if >3s into current track, restart instead of going prev
+      if (audio.currentTime > 3) {
+        audio.currentTime = 0;
+        return;
+      }
+
+      if (shuffleOn) {
+        if (!queue.length) buildQueueFromCurrent();
+        queuePos = Math.max(0, queuePos - 1);
+        playByLibraryIndex(queue[queuePos]);
+        return;
+      }
+
+      let idx = activeLibIndex - 1;
+      if (idx < 0) {
+        if (repeatMode === "all") idx = library.length - 1;
+        else idx = 0;
+      }
+      playByLibraryIndex(idx);
+    }
+
     // ===== Footer play/pause =====
-    playPauseBtn.addEventListener("click", () => {
+    playPauseBtn.addEventListener("click", async () => {
       if (!audio.src) return;
 
       if (isPlaying) {
@@ -294,16 +797,32 @@
         if (activePlayBtn) activePlayBtn.textContent = "Play";
         if (activeRow) activeRow.classList.remove("is-playing");
       } else {
-        audio.play().then(() => {
+        try {
+          await ensureAudioGraph();
+          await audio.play();
           isPlaying = true;
           playPauseBtn.textContent = "Pause";
           if (activePlayBtn) activePlayBtn.textContent = "Pause";
           if (activeRow) activeRow.classList.add("is-playing");
-        }).catch(e => {
+
+          if (vizOn) startViz();
+        } catch (e) {
           showError(`play() failed.\n${String(e)}\n\nURL:\n${audio.src}`);
-        });
+        }
       }
     });
+
+    // ===== Added: new control listeners =====
+    prevBtn.addEventListener("click", () => prevTrack());
+    nextBtn.addEventListener("click", () => nextTrack());
+
+    shuffleBtn.addEventListener("click", () => setShuffle(!shuffleOn));
+    repeatBtn.addEventListener("click", () => cycleRepeat());
+
+    lyricsBtn.addEventListener("click", () => openLyrics(!lyricsPanel.classList.contains("show")));
+    lyricsClose.addEventListener("click", () => openLyrics(false));
+
+    vizBtn.addEventListener("click", () => openViz(!vizWrap.classList.contains("show")));
 
     // ===== Audio load errors (this will catch 404 / decode issues) =====
     audio.addEventListener("error", () => {
@@ -326,6 +845,11 @@
       timeNowEl.textContent = fmtTime(audio.currentTime);
       const d = audio.duration || 0;
       progress.value = d > 0 ? String(Math.round((audio.currentTime / d) * 1000)) : "0";
+
+      // Added: lyrics follow if timecoded
+      if (lyricsPanel.classList.contains("show")) {
+        updateLyricsActiveLine();
+      }
     });
 
     progress.addEventListener("pointerdown", () => { isScrubbing = true; });
@@ -345,21 +869,38 @@
     });
 
     audio.addEventListener("ended", () => {
+      // Repeat one handled by audio.loop already
+      if (repeatMode === "one") return;
+
+      // If repeat all OR shuffle has more items: go next
+      if (repeatMode === "all" || shuffleOn) {
+        nextTrack();
+        return;
+      }
+
+      // Default old behavior (stop/reset)
       isPlaying = false;
       playPauseBtn.textContent = "Play";
       clearActiveRow();
       timeNowEl.textContent = "0:00";
       progress.value = "0";
+      stopViz();
     });
 
     // ===== Render =====
     function renderProjects(data) {
       projectsEl.innerHTML = "";
+      library = [];
+      activeLibIndex = -1;
+      queue = [];
+      queuePos = 0;
 
       if (!data || !Array.isArray(data.projects) || data.projects.length === 0) {
         projectsEl.innerHTML = "<div class='project'><div class='muted mono'>No projects found.</div></div>";
         return;
       }
+
+      let libCounter = 0;
 
       data.projects.forEach(project => {
         const section = document.createElement("section");
@@ -381,7 +922,25 @@
 
           const playBtn = document.createElement("button");
           playBtn.textContent = "Play";
-          playBtn.addEventListener("click", () => toggleFromRow(row, playBtn, track));
+
+          // Flatten into global library (this is key for global shuffle/next/prev)
+          const libItem = {
+            libIndex: libCounter,
+            title: track.title || "Untitled",
+            mp3: track.mp3,
+            lyrics: track.lyrics || null,  // Added (optional)
+            rowEl: row,
+            playBtnEl: playBtn
+          };
+
+          // Attach libIndex to the original track object too (minimal change)
+          track.libIndex = libCounter;
+
+          playBtn.addEventListener("click", () => {
+            activeLibIndex = libItem.libIndex;
+            if (shuffleOn) buildQueueFromCurrent();
+            toggleFromRow(row, playBtn, libItem);
+          });
 
           const dlMp3 = document.createElement("a");
           dlMp3.textContent = "MP3";
@@ -394,10 +953,24 @@
           row.appendChild(left);
           row.appendChild(actions);
           section.appendChild(row);
+
+          library.push(libItem);
+          libCounter++;
         });
 
         projectsEl.appendChild(section);
       });
+
+      // Keep previous behavior: nothing auto-plays
+      // If shuffle already on before reload, rebuild queue after first selection
+      setShuffle(shuffleOn);
+
+      // When library exists, make repeat button reflect mode
+      repeatBtn.textContent =
+        repeatMode === "off" ? "Repeat: Off" :
+        repeatMode === "one" ? "Repeat: One" :
+        "Repeat: All";
+      audio.loop = (repeatMode === "one");
     }
 
     fetch("data/tracks.json")
