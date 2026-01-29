@@ -13,15 +13,15 @@
         { "title": "Iskald - I THINK TO FAST TO SLEEP", "artist": "Iskald", "mp3": "music/iskald/Iskald - I THINK TO FAST TO SLEEP.mp3" },
         { "title": "Iskald - Storm in My Head", "artist": "Iskald", "mp3": "music/iskald/Iskald - Storm in My Head.mp3" },
 
-        { "title": "Iskald - AndWhy", "artist": "Iskald", "mp3": "music/iskald/Iskald - AndWhy.mp3" },
+        { "title": "Iskald - Anxiety", "artist": "Iskald", "mp3": "music/iskald/Iskald - Anxiety.mp3" },
         { "title": "Iskald - Cold Heart, Hot Mind", "artist": "Iskald", "mp3": "music/iskald/Iskald - Cold Heart, Hot Mind.mp3" },
         { "title": "Iskald - Cold Heart", "artist": "Iskald", "mp3": "music/iskald/Iskald - Cold Heart.mp3" },
         { "title": "Iskald - Narcotics", "artist": "Iskald", "mp3": "music/iskald/Iskald - Narcotics.mp3" },
         { "title": "Iskald - Roses in the concrete", "artist": "Iskald", "mp3": "music/iskald/Iskald - Roses in the concrete.mp3" },
         { "title": "Iskald - Sons of the Night", "artist": "Iskald", "mp3": "music/iskald/Iskald - Sons of the Night.mp3" },
         { "title": "Iskald - The Man Who Sees EVERYTHING (1)", "artist": "Iskald", "mp3": "music/iskald/Iskald - The Man Who Sees EVERYTHING (1).mp3" },
-        { "title": "Iskald - we move quiet", "artist": "Iskald", "mp3": "music/iskald/Iskald - we move quiet.mp3" },
-        { "title": "Iskald - Were Viking (Remastered)", "artist": "Iskald", "mp3": "music/iskald/Iskald - Were Viking (Remastered).mp3" },
+        { "title": "Iskald - We move quiet", "artist": "Iskald", "mp3": "music/iskald/Iskald - We move quiet.mp3" },
+        { "title": "Iskald - Were Vikings (Remastered)", "artist": "Iskald", "mp3": "music/iskald/Iskald - Were Vikings (Remastered).mp3" },
         { "title": "Iskald - Wolf of Two Countries", "artist": "Iskald", "mp3": "music/iskald/Iskald - Wolf of Two Countries.mp3" },
 
         { "title": "Iskald - clarity over noise", "artist": "Iskald", "mp3": "music/iskald/Iskald - clarity over noise.mp3" },
@@ -35,13 +35,13 @@
       "id": "retning",
       "title": "RETNING",
       "tracks": [
-        { "title": "Maneit - Euphoria (Ultimate Club Mix (Extended Version) (Instrumental))", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Euphoria (Ultimate Club Mix (Extended Version) (Instrumental)).mp3" },
-        { "title": "Maneit - The Machine Awakens (Extended Mix) (Instrumental)", "artist": "Maneit", "mp3": "music/RETNING/Maneit - The Machine Awakens (Extended Mix) (Instrumental).mp3" },
+        { "title": "Maneit - Euphoria (Ultimate Club Mix (Extended Version))", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Euphoria (Ultimate Club Mix (Extended Version)) (Instrumental).mp3" },
+        { "title": "Maneit - The Machine Awakens (Extended Mix)", "artist": "Maneit", "mp3": "music/RETNING/Maneit - The Machine Awakens (Extended Mix) (Instrumental).mp3" },
 
         { "title": "Maneit - Aurora Frequency v2", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Aurora Frequency v2.mp3" },
         { "title": "Maneit - Aurora Frequency", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Aurora Frequency.mp3" },
 
-        { "title": "Maneit - Cryoshift 2", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Cryoshift 2.mp3" },
+        { "title": "Maneit - Cryoshift v2", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Cryoshift v2.mp3" },
         { "title": "Maneit - Cryoshift", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Cryoshift.mp3" },
 
         { "title": "Maneit - Crystal Overdrive", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Crystal Overdrive.mp3" },
@@ -50,8 +50,8 @@
         { "title": "Maneit - Electric Fjord v2", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Electric Fjord v2.mp3" },
         { "title": "Maneit - Electric Fjord", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Electric Fjord.mp3" },
 
-        { "title": "Maneit - Euphoria Club Edit", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Euphoria Club Edit.mp3" },
-        { "title": "Maneit - Euphoria (Instrumental Extended Mix)(2) (Instrumental)", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Euphoria (Instrumental Extended Mix)(2) (Instrumental).mp3" },
+        { "title": "Maneit - Euphoria (Club Edit)", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Euphoria (Club Edit).mp3" },
+        { "title": "Maneit - Euphoria (Instrumental Extended Mix v2)", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Euphoria (Instrumental Extended Mix v2) (Instrumental).mp3" },
 
         { "title": "Maneit - Frozen Highway", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Frozen Highway.mp3" },
         { "title": "Maneit - Midnight Rush", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Midnight Rush.mp3" },
@@ -70,23 +70,6 @@
         { "title": "Maneit - Zero Degrees", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Zero Degrees.mp3" },
 
         { "title": "RETNING - MOVE WITH THE LIGHT", "artist": "RETNING", "mp3": "music/RETNING/RETNING - MOVE WITH THE LIGHT.mp3" }
-      ]
-    },
-
-    {
-      "id": "stal",
-      "title": "STÅL",
-      "tracks": [
-        { "title": "STÅL - Built To Hold", "artist": "STÅL", "mp3": "music/STÅL/STÅL - Built To Hold.mp3" },
-        { "title": "STÅL - When the weight decides", "artist": "STÅL", "mp3": "music/STÅL/STÅL - When the weight decides.mp3" }
-      ]
-    },
-
-    {
-      "id": "aoma",
-      "title": "aoma",
-      "tracks": [
-        { "title": "AOMA", "artist": "AOMA", "mp3": "music/aoma/AOMA.mp3" }
       ]
     }
   ]
