@@ -1,832 +1,159 @@
-<script>
-  // ===== Nav jump =====
-  document.querySelectorAll("[data-jump]").forEach(el => {
-    el.addEventListener("click", () => {
-      const sel = el.getAttribute("data-jump");
-      const target = document.querySelector(sel);
-      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  });
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Maneit · Music</title>
 
-  // ===== Elements =====
-  const projectsEl = document.getElementById("projectsList");
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Maneit Music Node — sound, structure, emotion." />
 
-  const audio = document.getElementById("audio");
-  const player = document.getElementById("player");
+  <link rel="stylesheet" href="css/core.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/player.css" />
 
-  const titleEl = document.getElementById("player-title");
-  const playPauseBtn = document.getElementById("playPause");
-  const downloadMp3 = document.getElementById("downloadMp3");
+  <style>
+    html { scroll-behavior: smooth; }
+    .anchor { scroll-margin-top: 24px; }
 
-  const progress = document.getElementById("progress");
-  const timeNowEl = document.getElementById("time-now");
-  const timeTotalEl = document.getElementById("time-total");
+    .nav-link { cursor: pointer; user-select: none; }
+    .nav-link:hover { color: rgba(232,237,247,0.92); }
 
-  const audioError = document.getElementById("audioError");
-
-  const prevBtn = document.getElementById("prevBtn");
-  const nextBtn = document.getElementById("nextBtn");
-
-  const shuffleAllBtn = document.getElementById("shuffleAllBtn");
-  const shuffleArtistBtn = document.getElementById("shuffleArtistBtn");
-  const repeatBtn = document.getElementById("repeatBtn");
-
-  const vizBtn = document.getElementById("vizBtn");
-  const vizPanel = document.getElementById("vizPanel");
-  const vizCanvas = document.getElementById("viz");
-  const vizCtx = vizCanvas.getContext("2d");
-
-  const eqBtn = document.getElementById("eqBtn");
-  const eqPanel = document.getElementById("eqPanel");
-  const eqEnableBtn = document.getElementById("eqEnableBtn");
-  const eqResetBtn = document.getElementById("eqResetBtn");
-
-  const vol = document.getElementById("vol");
-
-  // EQ sliders + labels
-  const eq_pre = document.getElementById("eq_pre");
-  const eq_60 = document.getElementById("eq_60");
-  const eq_170 = document.getElementById("eq_170");
-  const eq_350 = document.getElementById("eq_350");
-  const eq_1000 = document.getElementById("eq_1000");
-  const eq_3500 = document.getElementById("eq_3500");
-
-  const val_pre = document.getElementById("val_pre");
-  const val_60 = document.getElementById("val_60");
-  const val_170 = document.getElementById("val_170");
-  const val_350 = document.getElementById("val_350");
-  const val_1000 = document.getElementById("val_1000");
-  const val_3500 = document.getElementById("val_3500");
-
-  // ===== State =====
-  let isPlaying = false;
-  let activeRow = null;
-  let activePlayBtn = null;
-  let activeTrackKey = null;
-
-  const LS = {
-    VOL: "maneit_music_vol_v2",
-    SHUFFLE_MODE: "maneit_music_shuffle_mode_v2",
-    REPEAT: "maneit_music_repeat_v2",
-    VIZ_ON: "maneit_music_viz_on_v2",
-    EQ_PANEL: "maneit_music_eq_panel_v2",
-    EQ_ENABLED: "maneit_music_eq_enabled_v2",
-    EQ_PRE: "maneit_music_eq_pre_v2",
-    EQ_60: "maneit_music_eq_60_v2",
-    EQ_170: "maneit_music_eq_170_v2",
-    EQ_350: "maneit_music_eq_350_v2",
-    EQ_1000: "maneit_music_eq_1000_v2",
-    EQ_3500: "maneit_music_eq_3500_v2"
-  };
-
-  let library = [];
-  let activeLibIndex = -1;
-
-  let shuffleMode = "off"; // off | all | artist
-  let repeatMode = "off";  // off | one | all
-
-  let queue = [];
-  let queuePos = 0;
-
-  // Visualizer / WebAudio (ONLY if CORS OK)
-  let audioCtx = null;
-  let analyser = null;
-  let srcNode = null;
-  let rafId = 0;
-  let vizOn = false;
-
-  // Equalizer nodes
-  let eqEnabled = true;
-  let preGain = null;
-  let eqNodes = { f60:null, f170:null, f350:null, f1000:null, f3500:null };
-
-  // IMPORTANT: we will ONLY allow WebAudio if CORS is confirmed OK for the current track
-  let webAudioAllowedForCurrent = false;
-
-  function showError(msg) {
-    audioError.style.display = "block";
-    audioError.innerHTML = `<strong>AUDIO</strong>\n${msg}`;
-  }
-  function clearError() {
-    audioError.style.display = "none";
-    audioError.textContent = "";
-  }
-
-  function fmtTime(sec) {
-    if (!isFinite(sec) || sec < 0) return "0:00";
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    return `${m}:${String(s).padStart(2, "0")}`;
-  }
-
-  // fix double slashes but keep https://
-  function safeUrl(path) {
-    try {
-      const s = String(path || "").trim();
-      return encodeURI(s.replace(/([^:]\/)\/+/g, "$1"));
-    } catch {
-      return path;
+    .download-note {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border: 1px solid var(--color-line);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md);
+      box-shadow: var(--shadow-soft);
     }
-  }
-
-  function clamp(n, a, b) { return Math.min(b, Math.max(a, n)); }
-
-  async function corsAllowsWebAudio(url) {
-    try {
-      const res = await fetch(url, {
-        method: "GET",
-        mode: "cors",
-        cache: "no-store",
-        headers: { "Range": "bytes=0-0" }
-      });
-      return res && (res.status === 206 || res.status === 200);
-    } catch {
-      return false;
+    .download-note h3 {
+      font-size: 14px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 10px 0;
     }
-  }
-
-  function persist() {
-    try {
-      localStorage.setItem(LS.VOL, String(audio.volume));
-      localStorage.setItem(LS.SHUFFLE_MODE, shuffleMode);
-      localStorage.setItem(LS.REPEAT, repeatMode);
-      localStorage.setItem(LS.VIZ_ON, vizOn ? "1" : "0");
-
-      localStorage.setItem(LS.EQ_PANEL, eqPanel.classList.contains("show") ? "1" : "0");
-      localStorage.setItem(LS.EQ_ENABLED, eqEnabled ? "1" : "0");
-
-      localStorage.setItem(LS.EQ_PRE, String(eq_pre.value));
-      localStorage.setItem(LS.EQ_60, String(eq_60.value));
-      localStorage.setItem(LS.EQ_170, String(eq_170.value));
-      localStorage.setItem(LS.EQ_350, String(eq_350.value));
-      localStorage.setItem(LS.EQ_1000, String(eq_1000.value));
-      localStorage.setItem(LS.EQ_3500, String(eq_3500.value));
-    } catch {}
-  }
-
-  function loadPersist() {
-    try {
-      const v = parseFloat(localStorage.getItem(LS.VOL));
-      if (isFinite(v)) audio.volume = clamp(v, 0, 1);
-
-      const sm = localStorage.getItem(LS.SHUFFLE_MODE);
-      if (sm === "off" || sm === "all" || sm === "artist") shuffleMode = sm;
-
-      const rm = localStorage.getItem(LS.REPEAT);
-      if (rm === "off" || rm === "one" || rm === "all") repeatMode = rm;
-
-      vizOn = localStorage.getItem(LS.VIZ_ON) === "1";
-
-      const eqp = localStorage.getItem(LS.EQ_PRE);   if (eqp !== null) eq_pre.value = eqp;
-      const e60 = localStorage.getItem(LS.EQ_60);    if (e60 !== null) eq_60.value = e60;
-      const e170 = localStorage.getItem(LS.EQ_170);  if (e170 !== null) eq_170.value = e170;
-      const e350 = localStorage.getItem(LS.EQ_350);  if (e350 !== null) eq_350.value = e350;
-      const e1k = localStorage.getItem(LS.EQ_1000);  if (e1k !== null) eq_1000.value = e1k;
-      const e35 = localStorage.getItem(LS.EQ_3500);  if (e35 !== null) eq_3500.value = e35;
-
-      eqEnabled = localStorage.getItem(LS.EQ_ENABLED) !== "0";
-    } catch {}
-  }
-
-  function setActiveRow(row, playBtn, trackKey, trackTitle, mp3Path) {
-    if (activeRow) activeRow.classList.remove("is-playing");
-    if (activePlayBtn) activePlayBtn.textContent = "Play";
-
-    activeRow = row;
-    activePlayBtn = playBtn;
-    activeTrackKey = trackKey;
-
-    if (activeRow) activeRow.classList.add("is-playing");
-    if (activePlayBtn) activePlayBtn.textContent = "Pause";
-
-    titleEl.textContent = trackTitle || "—";
-
-    const mp3Url = safeUrl(mp3Path || "#");
-    downloadMp3.href = mp3Url;
-    downloadMp3.setAttribute("download", (trackTitle || "track") + ".mp3");
-
-    player.hidden = false;
-  }
-
-  function clearActiveRow() {
-    if (activeRow) activeRow.classList.remove("is-playing");
-    if (activePlayBtn) activePlayBtn.textContent = "Play";
-    activeRow = null;
-    activePlayBtn = null;
-    activeTrackKey = null;
-  }
-
-  function fisherYates(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
+    .download-note p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--color-muted);
     }
-    return arr;
-  }
-
-  function currentArtistKey() {
-    const t = library[activeLibIndex];
-    if (!t) return null;
-    return (t.artist || t.projectTitle || "").trim().toLowerCase() || null;
-  }
-
-  function buildQueueFromCurrent() {
-    if (!library.length || activeLibIndex < 0) return;
-
-    let candidates = [];
-    if (shuffleMode === "all") {
-      candidates = library.map((_, i) => i).filter(i => i !== activeLibIndex);
-    } else if (shuffleMode === "artist") {
-      const key = currentArtistKey();
-      candidates = library
-        .map((it, i) => ({ it, i }))
-        .filter(x => x.i !== activeLibIndex)
-        .filter(x => ((x.it.artist || x.it.projectTitle || "").trim().toLowerCase()) === key)
-        .map(x => x.i);
-    } else {
-      queue = [];
-      queuePos = 0;
-      return;
+    .download-note .mono {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: rgba(154,163,178,0.95);
     }
 
-    fisherYates(candidates);
-    queue = [activeLibIndex, ...candidates];
-    queuePos = 0;
-  }
-
-  function setShuffleMode(mode) {
-    shuffleMode = mode;
-    shuffleAllBtn.classList.toggle("on", shuffleMode === "all");
-    shuffleArtistBtn.classList.toggle("on", shuffleMode === "artist");
-    shuffleAllBtn.setAttribute("aria-pressed", String(shuffleMode === "all"));
-    shuffleArtistBtn.setAttribute("aria-pressed", String(shuffleMode === "artist"));
-    if (shuffleMode !== "off") buildQueueFromCurrent();
-    else { queue = []; queuePos = 0; }
-    persist();
-  }
-
-  function cycleRepeat() {
-    const order = ["off", "one", "all"];
-    repeatMode = order[(order.indexOf(repeatMode) + 1) % order.length];
-    repeatBtn.dataset.mode = repeatMode;
-    repeatBtn.textContent =
-      repeatMode === "off" ? "Repeat: Off" :
-      repeatMode === "one" ? "Repeat: One" :
-      "Repeat: All";
-    audio.loop = (repeatMode === "one");
-    persist();
-  }
-
-  function applyRepeatUI() {
-    repeatBtn.dataset.mode = repeatMode;
-    repeatBtn.textContent =
-      repeatMode === "off" ? "Repeat: Off" :
-      repeatMode === "one" ? "Repeat: One" :
-      "Repeat: All";
-    audio.loop = (repeatMode === "one");
-  }
-
-  function openViz(open) {
-    const shouldOpen = !!open;
-    vizOn = shouldOpen;
-
-    // if WebAudio not allowed, don’t open viz
-    if (vizOn && !webAudioAllowedForCurrent) {
-      vizOn = false;
-      showError("Visualizer disabled: CORS not enabled for WebAudio on this audio host.");
-      persist();
-      return;
+    /* Error banner */
+    .audio-error {
+      max-width: var(--max-width);
+      margin: 14px auto 0;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255, 90, 90, 0.08);
+      color: rgba(232,237,247,0.92);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      display: none;
+      white-space: pre-wrap;
     }
-
-    vizPanel.classList.toggle("show", vizOn);
-    vizPanel.setAttribute("aria-hidden", String(!vizOn));
-    vizBtn.setAttribute("aria-expanded", String(vizOn));
-    vizBtn.classList.toggle("on", vizOn);
-
-    if (!vizOn) stopViz();
-    else if (analyser) startViz();
-
-    persist();
-  }
-
-  function openEq(open) {
-    const shouldOpen = !!open;
-
-    if (shouldOpen && !webAudioAllowedForCurrent) {
-      showError("Equalizer disabled: CORS not enabled for WebAudio on this audio host.");
-      return;
-    }
-
-    eqPanel.classList.toggle("show", shouldOpen);
-    eqPanel.setAttribute("aria-hidden", String(!shouldOpen));
-    eqBtn.setAttribute("aria-expanded", String(shouldOpen));
-    eqBtn.classList.toggle("on", shouldOpen);
-    persist();
-  }
-
-  function setEqEnabled(on) {
-    eqEnabled = !!on;
-    eqEnableBtn.classList.toggle("on", eqEnabled);
-    eqEnableBtn.setAttribute("aria-pressed", String(eqEnabled));
-    eqEnableBtn.textContent = eqEnabled ? "EQ: On" : "EQ: Off";
-    applyEqToGraph();
-    persist();
-  }
-
-  function setEqLabel(el, v) {
-    const n = Math.round(parseFloat(v) * 10) / 10;
-    el.textContent = `${n} dB`;
-  }
-
-  function syncEqLabels() {
-    setEqLabel(val_pre, eq_pre.value);
-    setEqLabel(val_60, eq_60.value);
-    setEqLabel(val_170, eq_170.value);
-    setEqLabel(val_350, eq_350.value);
-    setEqLabel(val_1000, eq_1000.value);
-    setEqLabel(val_3500, eq_3500.value);
-  }
-
-  function resetEq() {
-    eq_pre.value = "0";
-    eq_60.value = "0";
-    eq_170.value = "0";
-    eq_350.value = "0";
-    eq_1000.value = "0";
-    eq_3500.value = "0";
-    syncEqLabels();
-    applyEqSettings();
-    persist();
-  }
-
-  // ===== WebAudio graph (ONLY if allowed) =====
-  async function ensureAudioGraph() {
-    if (!webAudioAllowedForCurrent) return false;
-
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === "suspended") { try { await audioCtx.resume(); } catch {} }
-
-    if (!analyser) {
-      analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 2048;
-      analyser.smoothingTimeConstant = 0.82;
-    }
-
-    if (!preGain) {
-      preGain = audioCtx.createGain();
-      preGain.gain.value = dbToGain(parseFloat(eq_pre.value));
-    }
-
-    const mk = (type, freq, q, gain) => {
-      const f = audioCtx.createBiquadFilter();
-      f.type = type;
-      f.frequency.value = freq;
-      if (q != null) f.Q.value = q;
-      f.gain.value = gain;
-      return f;
-    };
-
-    if (!eqNodes.f60)   eqNodes.f60   = mk("lowshelf", 60,   null, parseFloat(eq_60.value));
-    if (!eqNodes.f170)  eqNodes.f170  = mk("peaking",  170,  1.0,  parseFloat(eq_170.value));
-    if (!eqNodes.f350)  eqNodes.f350  = mk("peaking",  350,  1.0,  parseFloat(eq_350.value));
-    if (!eqNodes.f1000) eqNodes.f1000 = mk("peaking",  1000, 1.0,  parseFloat(eq_1000.value));
-    if (!eqNodes.f3500) eqNodes.f3500 = mk("highshelf",3500, null, parseFloat(eq_3500.value));
-
-    // IMPORTANT: only create MediaElementSource when allowed
-    if (!srcNode) {
-      srcNode = audioCtx.createMediaElementSource(audio);
-    }
-
-    applyEqToGraph();
-    applyEqSettings();
-    return true;
-  }
-
-  function disconnectAllSafe(node) { try { node.disconnect(); } catch {} }
-
-  function applyEqToGraph() {
-    if (!audioCtx || !srcNode || !analyser || !webAudioAllowedForCurrent) return;
-
-    disconnectAllSafe(srcNode);
-    disconnectAllSafe(preGain);
-    Object.values(eqNodes).forEach(n => n && disconnectAllSafe(n));
-    disconnectAllSafe(analyser);
-
-    if (eqEnabled) {
-      srcNode.connect(preGain);
-      preGain.connect(eqNodes.f60);
-      eqNodes.f60.connect(eqNodes.f170);
-      eqNodes.f170.connect(eqNodes.f350);
-      eqNodes.f350.connect(eqNodes.f1000);
-      eqNodes.f1000.connect(eqNodes.f3500);
-      eqNodes.f3500.connect(analyser);
-      analyser.connect(audioCtx.destination);
-    } else {
-      srcNode.connect(analyser);
-      analyser.connect(audioCtx.destination);
-    }
-  }
-
-  function dbToGain(db) { return Math.pow(10, (db || 0) / 20); }
-
-  function applyEqSettings() {
-    if (!audioCtx || !webAudioAllowedForCurrent) return;
-
-    const preDb = parseFloat(eq_pre.value);
-    if (preGain) preGain.gain.value = dbToGain(isFinite(preDb) ? preDb : 0);
-
-    if (eqNodes.f60) eqNodes.f60.gain.value = parseFloat(eq_60.value);
-    if (eqNodes.f170) eqNodes.f170.gain.value = parseFloat(eq_170.value);
-    if (eqNodes.f350) eqNodes.f350.gain.value = parseFloat(eq_350.value);
-    if (eqNodes.f1000) eqNodes.f1000.gain.value = parseFloat(eq_1000.value);
-    if (eqNodes.f3500) eqNodes.f3500.gain.value = parseFloat(eq_3500.value);
-  }
-
-  // ===== Visualizer draw =====
-  function startViz() {
-    if (!vizOn || !analyser || !webAudioAllowedForCurrent) return;
-    cancelAnimationFrame(rafId);
-
-    const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
-    const cssW = vizCanvas.clientWidth || 600;
-    const cssH = 120;
-
-    vizCanvas.width = cssW * dpr;
-    vizCanvas.height = cssH * dpr;
-    vizCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    const data = new Uint8Array(analyser.frequencyBinCount);
-
-    const draw = () => {
-      rafId = requestAnimationFrame(draw);
-      analyser.getByteFrequencyData(data);
-
-      vizCtx.clearRect(0, 0, cssW, cssH);
-
-      const bars = 90;
-      const step = Math.floor(data.length / bars);
-      const barW = cssW / bars;
-
-      for (let i = 0; i < bars; i++) {
-        const v = data[i * step] / 255;
-        const h = Math.max(2, v * cssH);
-        vizCtx.globalAlpha = 0.20 + v * 0.70;
-        vizCtx.fillStyle = "rgba(232,237,247,0.95)";
-        vizCtx.fillRect(i * barW + 1, cssH - h, Math.max(1, barW - 2), h);
-      }
-      vizCtx.globalAlpha = 1;
-    };
-
-    draw();
-  }
-
-  function stopViz() {
-    cancelAnimationFrame(rafId);
-    rafId = 0;
-  }
-
-  async function playNewSource(mp3Path) {
-    clearError();
-
-    const mp3Url = safeUrl(mp3Path);
-
-    // MUST set before src
-    audio.crossOrigin = "anonymous";
-
-    // Always set src and play normally first (sound)
-    audio.src = mp3Url;
-
-    // Now decide if WebAudio is allowed for this track
-    webAudioAllowedForCurrent = await corsAllowsWebAudio(mp3Url);
-
-    // If not allowed: force-close viz/eq panels (sound still works)
-    if (!webAudioAllowedForCurrent) {
-      stopViz();
-      vizOn = false;
-      vizPanel.classList.remove("show");
-      vizBtn.classList.remove("on");
-      eqPanel.classList.remove("show");
-      eqBtn.classList.remove("on");
-    }
-
-    try {
-      // Only build graph if allowed
-      if (webAudioAllowedForCurrent) {
-        await ensureAudioGraph();
-      }
-
-      await audio.play();
-      isPlaying = true;
-      playPauseBtn.textContent = "Pause";
-      if (vizOn && webAudioAllowedForCurrent) startViz();
-    } catch (e) {
-      isPlaying = false;
-      playPauseBtn.textContent = "Play";
-      showError(`play() failed.\n${String(e)}\n\nURL:\n${mp3Url}`);
-    }
-  }
-
-  function pausePlayback() {
-    audio.pause();
-    isPlaying = false;
-    playPauseBtn.textContent = "Play";
-  }
-
-  function playByLibraryIndex(idx) {
-    if (!library.length) return;
-    const t = library[idx];
-    if (!t) return;
-
-    activeLibIndex = idx;
-    if (shuffleMode !== "off") buildQueueFromCurrent();
-
-    setActiveRow(t.rowEl, t.playBtnEl, (t.title + "|" + t.mp3), t.title, t.mp3);
-    playNewSource(t.mp3);
-  }
-
-  function nextTrack() {
-    if (!library.length) return;
-
-    if (shuffleMode !== "off") {
-      if (!queue.length) buildQueueFromCurrent();
-      queuePos++;
-
-      if (queue.length <= 1) { pausePlayback(); return; }
-
-      if (queuePos >= queue.length) {
-        if (repeatMode === "all") { buildQueueFromCurrent(); queuePos = 0; }
-        else { pausePlayback(); return; }
-      }
-      playByLibraryIndex(queue[queuePos]);
-      return;
-    }
-
-    let idx = activeLibIndex + 1;
-    if (idx >= library.length) {
-      if (repeatMode === "all") idx = 0;
-      else { pausePlayback(); return; }
-    }
-    playByLibraryIndex(idx);
-  }
-
-  function prevTrack() {
-    if (!library.length) return;
-    if (audio.currentTime > 3) { audio.currentTime = 0; return; }
-
-    if (shuffleMode !== "off") {
-      if (!queue.length) buildQueueFromCurrent();
-      queuePos = Math.max(0, queuePos - 1);
-      playByLibraryIndex(queue[queuePos]);
-      return;
-    }
-
-    let idx = activeLibIndex - 1;
-    if (idx < 0) idx = (repeatMode === "all") ? library.length - 1 : 0;
-    playByLibraryIndex(idx);
-  }
-
-  function toggleFromRow(row, playBtn, track) {
-    const trackTitle = track.title || "—";
-    const mp3 = track.mp3;
-    const trackKey = (trackTitle + "|" + mp3);
-
-    if (!mp3) { showError(`Track has no mp3 path.\nTitle: ${trackTitle}`); return; }
-
-    if (typeof track.libIndex === "number") {
-      activeLibIndex = track.libIndex;
-      if (shuffleMode !== "off") buildQueueFromCurrent();
-    }
-
-    if (activeTrackKey === trackKey) {
-      if (isPlaying) {
-        pausePlayback();
-        if (activePlayBtn) activePlayBtn.textContent = "Play";
-        if (activeRow) activeRow.classList.remove("is-playing");
-      } else {
-        audio.play().then(() => {
-          isPlaying = true;
-          playPauseBtn.textContent = "Pause";
-          if (activePlayBtn) activePlayBtn.textContent = "Pause";
-          if (activeRow) activeRow.classList.add("is-playing");
-          if (vizOn && webAudioAllowedForCurrent) startViz();
-        }).catch(e => showError(`play() failed.\n${String(e)}\n\nURL:\n${audio.src}`));
-      }
-      return;
-    }
-
-    setActiveRow(row, playBtn, trackKey, trackTitle, mp3);
-    playNewSource(mp3);
-  }
-
-  // ===== Footer play/pause =====
-  playPauseBtn.addEventListener("click", async () => {
-    if (!audio.src) return;
-
-    if (isPlaying) {
-      pausePlayback();
-      if (activePlayBtn) activePlayBtn.textContent = "Play";
-      if (activeRow) activeRow.classList.remove("is-playing");
-    } else {
-      try {
-        // Only rebuild graph if allowed for current
-        if (webAudioAllowedForCurrent) await ensureAudioGraph();
-        await audio.play();
-        isPlaying = true;
-        playPauseBtn.textContent = "Pause";
-        if (activePlayBtn) activePlayBtn.textContent = "Pause";
-        if (activeRow) activeRow.classList.add("is-playing");
-        if (vizOn && webAudioAllowedForCurrent) startViz();
-      } catch (e) {
-        showError(`play() failed.\n${String(e)}\n\nURL:\n${audio.src}`);
-      }
-    }
-  });
-
-  prevBtn.addEventListener("click", () => prevTrack());
-  nextBtn.addEventListener("click", () => nextTrack());
-
-  shuffleAllBtn.addEventListener("click", () => setShuffleMode(shuffleMode === "all" ? "off" : "all"));
-  shuffleArtistBtn.addEventListener("click", () => setShuffleMode(shuffleMode === "artist" ? "off" : "artist"));
-
-  repeatBtn.addEventListener("click", () => cycleRepeat());
-
-  vizBtn.addEventListener("click", () => openViz(!vizPanel.classList.contains("show")));
-  eqBtn.addEventListener("click", () => openEq(!eqPanel.classList.contains("show")));
-  eqEnableBtn.addEventListener("click", () => setEqEnabled(!eqEnabled));
-  eqResetBtn.addEventListener("click", () => resetEq());
-
-  vol.addEventListener("input", () => {
-    audio.volume = clamp(parseFloat(vol.value), 0, 1);
-    persist();
-  });
-  audio.addEventListener("volumechange", () => { vol.value = String(audio.volume); });
-
-  const eqInputs = [eq_pre, eq_60, eq_170, eq_350, eq_1000, eq_3500];
-  eqInputs.forEach(inp => {
-    inp.addEventListener("input", () => {
-      syncEqLabels();
-      applyEqSettings();
-      persist();
-    });
-  });
-
-  audio.addEventListener("error", () => {
-    const code = audio.error ? audio.error.code : "unknown";
-    showError(`Audio element error. code=${code}\n\nURL:\n${audio.src}`);
-  });
-
-  // Progress
-  let isScrubbing = false;
-
-  audio.addEventListener("loadedmetadata", () => {
-    clearError();
-    timeTotalEl.textContent = fmtTime(audio.duration);
-    timeNowEl.textContent = fmtTime(0);
-    progress.value = 0;
-  });
-
-  audio.addEventListener("timeupdate", () => {
-    if (isScrubbing) return;
-    timeNowEl.textContent = fmtTime(audio.currentTime);
-    const d = audio.duration || 0;
-    progress.value = d > 0 ? String(Math.round((audio.currentTime / d) * 1000)) : "0";
-  });
-
-  progress.addEventListener("pointerdown", () => { isScrubbing = true; });
-  progress.addEventListener("pointerup", () => { isScrubbing = false; });
-
-  progress.addEventListener("input", () => {
-    const d = audio.duration || 0;
-    if (d <= 0) return;
-    const v = Number(progress.value) / 1000;
-    timeNowEl.textContent = fmtTime(v * d);
-  });
-
-  progress.addEventListener("change", () => {
-    const d = audio.duration || 0;
-    if (d <= 0) return;
-    audio.currentTime = (Number(progress.value) / 1000) * d;
-  });
-
-  audio.addEventListener("ended", () => {
-    if (repeatMode === "one") return;
-    if (repeatMode === "all" || shuffleMode !== "off") { nextTrack(); return; }
-    isPlaying = false;
-    playPauseBtn.textContent = "Play";
-    clearActiveRow();
-    timeNowEl.textContent = "0:00";
-    progress.value = "0";
-    stopViz();
-  });
-
-  function renderProjects(data) {
-    projectsEl.innerHTML = "";
-    library = [];
-    activeLibIndex = -1;
-    queue = [];
-    queuePos = 0;
-
-    if (!data || !Array.isArray(data.projects) || data.projects.length === 0) {
-      projectsEl.innerHTML = "<div class='project'><div class='muted mono'>No projects found.</div></div>";
-      return;
-    }
-
-    let libCounter = 0;
-
-    data.projects.forEach(project => {
-      const section = document.createElement("section");
-      section.className = "project";
-
-      const projectTitle = project.title || project.id || "Project";
-      section.innerHTML = `<h3 class="project-title">${projectTitle}</h3>`;
-
-      const tracks = Array.isArray(project.tracks) ? project.tracks : [];
-      tracks.forEach(track => {
-        const row = document.createElement("div");
-        row.className = "track";
-
-        const left = document.createElement("span");
-        left.className = "track-title";
-        left.textContent = track.title || "Untitled";
-
-        const actions = document.createElement("div");
-        actions.className = "track-actions";
-
-        const playBtn = document.createElement("button");
-        playBtn.textContent = "Play";
-
-        const libItem = {
-          libIndex: libCounter,
-          title: track.title || "Untitled",
-          mp3: track.mp3,
-          artist: track.artist || null,
-          projectTitle,
-          rowEl: row,
-          playBtnEl: playBtn
-        };
-
-        track.libIndex = libCounter;
-
-        playBtn.addEventListener("click", () => {
-          activeLibIndex = libItem.libIndex;
-          if (shuffleMode !== "off") buildQueueFromCurrent();
-          toggleFromRow(row, playBtn, libItem);
-        });
-
-        const dlMp3 = document.createElement("a");
-        dlMp3.textContent = "MP3";
-        dlMp3.href = safeUrl(track.mp3 || "#");
-        dlMp3.setAttribute("download", (track.title || "track") + ".mp3");
-
-        actions.appendChild(playBtn);
-        actions.appendChild(dlMp3);
-
-        row.appendChild(left);
-        row.appendChild(actions);
-        section.appendChild(row);
-
-        library.push(libItem);
-        libCounter++;
-      });
-
-      projectsEl.appendChild(section);
-    });
-
-    setShuffleMode(shuffleMode);
-    applyRepeatUI();
-    vol.value = String(audio.volume);
-  }
-
-  // ===== Init =====
-  loadPersist();
-  audio.muted = false;
-  if (!isFinite(audio.volume) || audio.volume <= 0) audio.volume = 0.9;
-
-  vol.value = String(audio.volume);
-  syncEqLabels();
-
-  if (vizOn) openViz(true);
-
-  const eqPanelWasOpen = localStorage.getItem(LS.EQ_PANEL) === "1";
-  if (eqPanelWasOpen) openEq(true);
-
-  shuffleAllBtn.classList.toggle("on", shuffleMode === "all");
-  shuffleArtistBtn.classList.toggle("on", shuffleMode === "artist");
-  shuffleAllBtn.setAttribute("aria-pressed", String(shuffleMode === "all"));
-  shuffleArtistBtn.setAttribute("aria-pressed", String(shuffleMode === "artist"));
-
-  applyRepeatUI();
-  setEqEnabled(eqEnabled);
-
-  fetch("data/tracks.json?v=" + Date.now(), { cache: "no-store" })
-    .then(res => {
-      if (!res.ok) throw new Error("tracks.json not found: " + res.status);
-      return res.json();
-    })
-    .then(renderProjects)
-    .catch(err => {
-      projectsEl.innerHTML =
-        "<div class='project'><div class='mono muted'>Failed to load data/tracks.json</div>" +
-        "<div class='mono muted' style='margin-top:8px; opacity:.8;'>" + String(err.message) + "</div></div>";
-    });
-</script>
+    .audio-error strong { color: rgba(255, 170, 170, 0.95); }
+
+    /* Make sure last tracks aren't blocked by the fixed player */
+    .content { padding-bottom: 220px; }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <div class="brand-kicker">MANEIT</div>
+      <h1 class="brand-title">MUSIC</h1>
+    </div>
+
+    <nav class="site-nav">
+      <span class="nav-item nav-link" data-jump="#listen">LISTEN</span>
+      <span class="nav-item nav-link" data-jump="#projects">PROJECTS</span>
+      <span class="nav-item nav-link" data-jump="#download">DOWNLOAD</span>
+    </nav>
+  </header>
+
+  <div class="audio-error" id="audioError"></div>
+
+  <section class="hero">
+    <h2>Sound.<br>Structure.<br>Emotion.</h2>
+    <p>
+      This is not a playlist.<br>
+      This is a control room.
+    </p>
+  </section>
+
+  <main class="content">
+    <div id="listen" class="anchor"></div>
+    <div id="projects" class="anchor"></div>
+
+    <section class="projects" id="projectsList"></section>
+
+    <div style="height: 18px;"></div>
+
+    <div id="download" class="anchor"></div>
+    <section class="download-note">
+      <h3>Download</h3>
+      <p>
+        Every track is available as a direct download.
+        Use the buttons next to each track:
+        <span class="mono">MP3</span> for quick listening.
+      </p>
+      <p class="mono" style="margin-top:10px;">
+        Bulk downloads (ZIP per project) can be added later.
+      </p>
+    </section>
+
+    <div style="height: 90px;"></div>
+  </main>
+
+  <!-- Player -->
+  <footer class="player" id="player" hidden>
+    <div class="player-inner">
+      <div class="player-left">
+        <div class="player-title" id="player-title">—</div>
+
+        <div class="player-meta">
+          <div class="player-time" id="time-now">0:00</div>
+
+          <input
+            class="player-progress"
+            id="progress"
+            type="range"
+            min="0"
+            max="1000"
+            value="0"
+            step="1"
+            aria-label="Track position"
+          />
+
+          <div class="player-time" id="time-total">0:00</div>
+        </div>
+      </div>
+
+      <div class="player-right">
+        <button id="prevBtn" class="mini" type="button" title="Previous">Prev</button>
+        <button id="playPause" class="primary" type="button">Play</button>
+        <button id="nextBtn" class="mini" type="button" title="Next">Next</button>
+
+        <label class="vol" title="Volume">
+          VOL
+          <input id="vol" type="range" min="0" max="1" step="0.01" value="0.9" aria-label="Volume" />
+        </label>
+
+        <a id="downloadMp3" href="#" download>MP3</a>
+      </div>
+
+      <audio id="audio" preload="metadata"></audio>
+    </div>
+  </footer>
+
+  <!-- One single JS file -->
+  <script src="js/app.js"></script>
+</body>
+</html>
