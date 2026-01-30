@@ -1,8 +1,8 @@
 /* ==========================================================
-   MANEIT MUSIC — ui.js (v1)
-   - Loads data/tracks.json (cache-bust)
-   - Renders into #projectsList
-   - Wires buttons to ManeitPlayer.playTrack()
+   MANEIT MUSIC — ui.js (v2)
+   - Renders projects into #projectsList (your real container)
+   - Loads data/tracks.json with cache-bust
+   - Wires Play buttons to ManeitPlayer.playTrack()
    ========================================================== */
 
 (() => {
@@ -11,7 +11,10 @@
   const TRACKS_URL = "data/tracks.json";
 
   const projectsEl = document.getElementById("projectsList");
-  if (!projectsEl) return;
+  if (!projectsEl) {
+    console.warn("ui.js: #projectsList not found");
+    return;
+  }
 
   function safeUrl(path) {
     try {
@@ -24,7 +27,7 @@
 
   async function loadTracks() {
     const res = await fetch(`${TRACKS_URL}?v=${Date.now()}`, { cache: "no-store" });
-    if (!res.ok) throw new Error(`tracks.json not found: ${res.status}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status} while loading ${TRACKS_URL}`);
     return await res.json();
   }
 
@@ -76,7 +79,10 @@
         };
 
         playBtn.addEventListener("click", () => {
-          if (!window.ManeitPlayer || typeof window.ManeitPlayer.playTrack !== "function") return;
+          if (!window.ManeitPlayer || typeof window.ManeitPlayer.playTrack !== "function") {
+            console.warn("ui.js: ManeitPlayer.playTrack not found");
+            return;
+          }
           window.ManeitPlayer.playTrack(item);
         });
 
@@ -92,11 +98,11 @@
         row.appendChild(actions);
         section.appendChild(row);
 
+        projectsEl.appendChild(section);
+
         lib.push(item);
         idx++;
       });
-
-      projectsEl.appendChild(section);
     });
 
     if (window.ManeitPlayer && typeof window.ManeitPlayer.setLibrary === "function") {
