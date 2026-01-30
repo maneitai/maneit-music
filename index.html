@@ -59,7 +59,7 @@
     }
     .audio-error strong { color: rgba(255, 170, 170, 0.95); }
 
-    /* Mini controls + volume (matches your existing look) */
+    /* Mini buttons */
     .player-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
     .player-right .mini {
@@ -81,6 +81,7 @@
       border-color: rgba(110,231,255,0.35);
       background: rgba(110,231,255,0.12);
     }
+    .player-right .mini.locked { opacity: .55; cursor: not-allowed; }
 
     .vol {
       display: inline-flex;
@@ -97,13 +98,79 @@
     }
     .vol input[type="range"] { width: 120px; }
 
+    /* EQ panel */
+    .player-aux {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 10px 0 0;
+    }
+    .panel {
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.18);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: none;
+      margin: 10px 0 0;
+    }
+    .panel.show { display: block; }
+
+    .eq-wrap {
+      padding: 10px 12px 12px;
+      font-family: var(--font-mono);
+      color: rgba(232,237,247,0.92);
+    }
+    .eq-top {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .eq-title {
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.95;
+    }
+    .eq-actions { display:flex; align-items:center; gap:10px; flex-wrap: wrap; }
+
+    .eq-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+    }
+    @media (max-width: 900px){ .eq-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+    @media (max-width: 520px){ .eq-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+
+    .eq-band {
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.02);
+      border-radius: 12px;
+      padding: 10px 10px 12px;
+    }
+    .eq-band .lbl {
+      font-size: 11px;
+      color: rgba(154,163,178,0.95);
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom: 8px;
+    }
+    .eq-band .val {
+      font-size: 11px;
+      color: rgba(232,237,247,0.92);
+      opacity: 0.9;
+      white-space: nowrap;
+    }
+    .eq-band input[type="range"]{ width: 100%; }
+
     /* Ensure last tracks aren't blocked by fixed player */
-    .content { padding-bottom: 260px; }
+    .content { padding-bottom: 330px; }
   </style>
 </head>
 
 <body>
-
   <header class="site-header">
     <div class="brand">
       <div class="brand-kicker">MANEIT</div>
@@ -121,17 +188,13 @@
 
   <section class="hero">
     <h2>Sound.<br>Structure.<br>Emotion.</h2>
-    <p>
-      This is not a playlist.<br>
-      This is a control room.
-    </p>
+    <p>This is not a playlist.<br>This is a control room.</p>
   </section>
 
   <main class="content">
     <div id="listen" class="anchor"></div>
     <div id="projects" class="anchor"></div>
 
-    <!-- UI renders projects here -->
     <section class="projects" id="projectsList"></section>
 
     <div style="height: 18px;"></div>
@@ -152,7 +215,7 @@
     <div style="height: 90px;"></div>
   </main>
 
-  <!-- PLAYER (stable markup) -->
+  <!-- PLAYER -->
   <footer class="player" id="player" hidden>
     <div class="player-inner">
       <div class="player-left">
@@ -178,10 +241,14 @@
 
       <div class="player-right">
         <button id="prevBtn" class="mini" type="button" title="Previous">Prev</button>
-
         <button id="playPause" class="primary" type="button">Play</button>
-
         <button id="nextBtn" class="mini" type="button" title="Next">Next</button>
+
+        <button id="shuffleAllBtn" class="mini" type="button" aria-pressed="false" title="Shuffle all tracks">Shuffle: All</button>
+        <button id="shuffleArtistBtn" class="mini" type="button" aria-pressed="false" title="Shuffle within artist">Shuffle: Artist</button>
+        <button id="repeatBtn" class="mini" type="button" data-mode="off" title="Repeat mode">Repeat: Off</button>
+
+        <button id="eqBtn" class="mini" type="button" aria-expanded="false" title="Equalizer">EQ</button>
 
         <label class="vol" title="Volume">
           VOL
@@ -193,13 +260,79 @@
 
       <audio id="audio" preload="metadata"></audio>
     </div>
+
+    <div class="player-aux">
+      <!-- Equalizer -->
+      <div class="panel" id="eqPanel" aria-hidden="true">
+        <div class="eq-wrap">
+          <div class="eq-top">
+            <div>
+              <div class="eq-title">Equalizer</div>
+              <div style="font-size:11px;color:rgba(154,163,178,0.95);margin-top:4px;">
+                Preamp + 10-band EQ (31Hz → 16kHz). Stored locally.
+              </div>
+            </div>
+            <div class="eq-actions">
+              <button id="eqEnableBtn" class="mini" type="button" aria-pressed="true" title="Enable/disable EQ">EQ: On</button>
+              <button id="eqResetBtn" class="mini" type="button" title="Reset EQ">Reset</button>
+            </div>
+          </div>
+
+          <div class="eq-grid">
+            <div class="eq-band">
+              <div class="lbl"><span>Preamp</span><span class="val" id="val_pre">0 dB</span></div>
+              <input id="eq_pre" type="range" min="-12" max="12" step="0.1" value="0" />
+            </div>
+
+            <div class="eq-band">
+              <div class="lbl"><span>31 Hz</span><span class="val" id="val_31">0 dB</span></div>
+              <input id="eq_31" type="range" min="-12" max="12" step="0.1" value="0" />
+            </div>
+            <div class="eq-band">
+              <div class="lbl"><span>62 Hz</span><span class="val" id="val_62">0 dB</span></div>
+              <input id="eq_62" type="range" min="-12" max="12" step="0.1" value="0" />
+            </div>
+            <div class="eq-band">
+              <div class="lbl"><span>125 Hz</span><span class="val" id="val_125">0 dB</span></div>
+              <input id="eq_125" type="range" min="-12" max="12" step="0.1" value="0" />
+            </div>
+            <div class="eq-band">
+              <div class="lbl"><span>250 Hz</span><span class="val" id="val_250">0 dB</span></div>
+              <input id="eq_250" type="range" min="-12" max="12" step="0.1" value="0" />
+            </div>
+            <div class="eq-band">
+              <div class="lbl"><span>500 Hz</span><span class="val" id="val_500">0 dB</span></div>
+              <input id="eq_500" type="range" min="-12" max="12" step="0.1" value="0" />
+            </div>
+            <div class="eq-band">
+              <div class="lbl"><span>1 kHz</span><span class="val" id="val_1000">0 dB</span></div>
+              <input id="eq_1000" type="range" min="-12" max="12" step="0.1" value="0" />
+            </div>
+            <div class="eq-band">
+              <div class="lbl"><span>2 kHz</span><span class="val" id="val_2000">0 dB</span></div>
+              <input id="eq_2000" type="range" min="-12" max="12" step="0.1" value="0" />
+            </div>
+            <div class="eq-band">
+              <div class="lbl"><span>4 kHz</span><span class="val" id="val_4000">0 dB</span></div>
+              <input id="eq_4000" type="range" min="-12" max="12" step="0.1" value="0" />
+            </div>
+            <div class="eq-band">
+              <div class="lbl"><span>8 kHz</span><span class="val" id="val_8000">0 dB</span></div>
+              <input id="eq_8000" type="range" min="-12" max="12" step="0.1" value="0" />
+            </div>
+            <div class="eq-band">
+              <div class="lbl"><span>16 kHz</span><span class="val" id="val_16000">0 dB</span></div>
+              <input id="eq_16000" type="range" min="-12" max="12" step="0.1" value="0" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </footer>
 
-  <!-- Scripts (NO inline JS) -->
   <script src="js/player.js" defer></script>
   <script src="js/ui.js" defer></script>
 
-  <!-- Tiny nav-jump script only (safe) -->
   <script defer>
     document.querySelectorAll("[data-jump]").forEach(el => {
       el.addEventListener("click", () => {
@@ -209,6 +342,5 @@
       });
     });
   </script>
-
 </body>
 </html>
