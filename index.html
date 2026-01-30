@@ -18,33 +18,25 @@
     .nav-link { cursor: pointer; user-select: none; }
     .nav-link:hover { color: rgba(232,237,247,0.92); }
 
-    .download-note {
+    .download-note{
       background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
       border: 1px solid var(--color-line);
       border-radius: var(--radius-lg);
       padding: var(--space-md);
       box-shadow: var(--shadow-soft);
     }
-    .download-note h3 {
+    .download-note h3{
       font-size: 14px;
       font-family: var(--font-mono);
       letter-spacing: 0.14em;
       text-transform: uppercase;
       margin: 0 0 10px 0;
     }
-    .download-note p {
-      font-size: 13px;
-      line-height: 1.6;
-      color: var(--color-muted);
-    }
-    .download-note .mono {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: rgba(154,163,178,0.95);
-    }
+    .download-note p{ font-size: 13px; line-height: 1.6; color: var(--color-muted); }
+    .download-note .mono{ font-family: var(--font-mono); font-size: 12px; color: rgba(154,163,178,0.95); }
 
     /* Visible audio error banner */
-    .audio-error {
+    .audio-error{
       max-width: var(--max-width);
       margin: 14px auto 0;
       padding: 12px 14px;
@@ -57,12 +49,11 @@
       display: none;
       white-space: pre-wrap;
     }
-    .audio-error strong { color: rgba(255, 170, 170, 0.95); }
+    .audio-error strong{ color: rgba(255, 170, 170, 0.95); }
 
     /* Mini buttons */
-    .player-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-
-    .player-right .mini {
+    .player-right{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .player-right .mini{
       border: 1px solid rgba(255,255,255,0.10);
       background: rgba(255,255,255,0.03);
       color: rgba(232,237,247,0.92);
@@ -75,18 +66,33 @@
       transition: transform .06s ease, background .12s ease, border-color .12s ease;
       white-space: nowrap;
     }
-    .player-right .mini:hover { background: rgba(255,255,255,0.06); }
-    .player-right .mini:active { transform: translateY(1px); }
-    .player-right .mini.on {
+    .player-right .mini:hover{ background: rgba(255,255,255,0.06); }
+    .player-right .mini:active{ transform: translateY(1px); }
+    .player-right .mini.on{
       border-color: rgba(110,231,255,0.35);
       background: rgba(110,231,255,0.12);
     }
-    .player-right .mini.locked { opacity: .55; cursor: not-allowed; }
+    .player-right .mini.locked{ opacity:.55; cursor:not-allowed; }
 
-    .vol {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+    /* Preset dropdown matches mini buttons */
+    .preset-select{
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.03);
+      color: rgba(232,237,247,0.92);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      outline: none;
+      cursor: pointer;
+      max-width: 260px;
+    }
+    .preset-select:disabled{ opacity:.55; cursor:not-allowed; }
+
+    .vol{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
       border: 1px solid rgba(255,255,255,0.10);
       background: rgba(255,255,255,0.02);
       color: rgba(154,163,178,0.95);
@@ -96,15 +102,11 @@
       font-size: 11px;
       white-space: nowrap;
     }
-    .vol input[type="range"] { width: 120px; }
+    .vol input[type="range"]{ width:120px; }
 
     /* EQ panel */
-    .player-aux {
-      max-width: var(--max-width);
-      margin: 0 auto;
-      padding: 10px 0 0;
-    }
-    .panel {
+    .player-aux{ max-width: var(--max-width); margin: 0 auto; padding: 10px 0 0; }
+    .panel{
       border: 1px solid rgba(255,255,255,0.10);
       background: rgba(0,0,0,0.18);
       border-radius: var(--radius-md);
@@ -112,61 +114,45 @@
       display: none;
       margin: 10px 0 0;
     }
-    .panel.show { display: block; }
+    .panel.show{ display:block; }
 
-    .eq-wrap {
-      padding: 10px 12px 12px;
-      font-family: var(--font-mono);
-      color: rgba(232,237,247,0.92);
-    }
-    .eq-top {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-    .eq-title {
-      font-size: 12px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      opacity: 0.95;
-    }
-    .eq-actions { display:flex; align-items:center; gap:10px; flex-wrap: wrap; }
+    .eq-wrap{ padding: 10px 12px 12px; font-family: var(--font-mono); color: rgba(232,237,247,0.92); }
+    .eq-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+    .eq-title{ font-size:12px; letter-spacing:0.12em; text-transform:uppercase; opacity:0.95; }
+    .eq-actions{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 
-    .eq-grid {
-      display: grid;
+    .eq-grid{
+      display:grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: 10px;
+      gap:10px;
     }
-    @media (max-width: 900px){ .eq-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
-    @media (max-width: 520px){ .eq-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 900px){ .eq-grid{ grid-template-columns: repeat(3, minmax(0,1fr)); } }
+    @media (max-width: 520px){ .eq-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
 
-    .eq-band {
+    .eq-band{
       border: 1px solid rgba(255,255,255,0.10);
       background: rgba(255,255,255,0.02);
       border-radius: 12px;
       padding: 10px 10px 12px;
     }
-    .eq-band .lbl {
-      font-size: 11px;
+    .eq-band .lbl{
+      font-size:11px;
       color: rgba(154,163,178,0.95);
       display:flex;
       justify-content:space-between;
       gap:8px;
-      margin-bottom: 8px;
+      margin-bottom:8px;
     }
-    .eq-band .val {
-      font-size: 11px;
+    .eq-band .val{
+      font-size:11px;
       color: rgba(232,237,247,0.92);
-      opacity: 0.9;
-      white-space: nowrap;
+      opacity:0.9;
+      white-space:nowrap;
     }
-    .eq-band input[type="range"]{ width: 100%; }
+    .eq-band input[type="range"]{ width:100%; }
 
     /* Ensure last tracks aren't blocked by fixed player */
-    .content { padding-bottom: 330px; }
+    .content{ padding-bottom: 350px; }
   </style>
 </head>
 
@@ -224,31 +210,29 @@
         <div class="player-meta">
           <div class="player-time" id="time-now">0:00</div>
 
-          <input
-            class="player-progress"
-            id="progress"
-            type="range"
-            min="0"
-            max="1000"
-            value="0"
-            step="1"
-            aria-label="Track position"
-          />
+          <input class="player-progress" id="progress" type="range"
+                 min="0" max="1000" value="0" step="1" aria-label="Track position" />
 
           <div class="player-time" id="time-total">0:00</div>
         </div>
       </div>
 
       <div class="player-right">
-        <button id="prevBtn" class="mini" type="button" title="Previous">Prev</button>
+        <button id="prevBtn" class="mini" type="button">Prev</button>
         <button id="playPause" class="primary" type="button">Play</button>
-        <button id="nextBtn" class="mini" type="button" title="Next">Next</button>
+        <button id="nextBtn" class="mini" type="button">Next</button>
 
-        <button id="shuffleAllBtn" class="mini" type="button" aria-pressed="false" title="Shuffle all tracks">Shuffle: All</button>
-        <button id="shuffleArtistBtn" class="mini" type="button" aria-pressed="false" title="Shuffle within artist">Shuffle: Artist</button>
-        <button id="repeatBtn" class="mini" type="button" data-mode="off" title="Repeat mode">Repeat: Off</button>
+        <button id="shuffleAllBtn" class="mini" type="button" aria-pressed="false">Shuffle: All</button>
+        <button id="shuffleArtistBtn" class="mini" type="button" aria-pressed="false">Shuffle: Artist</button>
+        <button id="repeatBtn" class="mini" type="button" data-mode="off">Repeat: Off</button>
 
-        <button id="eqBtn" class="mini" type="button" aria-expanded="false" title="Equalizer">EQ</button>
+        <select id="presetSelect" class="preset-select" title="EQ Presets">
+          <option value="custom">Preset: Custom</option>
+        </select>
+
+        <button id="bassBtn" class="mini" type="button" aria-pressed="false" title="Bass boost for nubs">Bass Boost</button>
+
+        <button id="eqBtn" class="mini" type="button" aria-expanded="false">EQ</button>
 
         <label class="vol" title="Volume">
           VOL
@@ -262,19 +246,18 @@
     </div>
 
     <div class="player-aux">
-      <!-- Equalizer -->
       <div class="panel" id="eqPanel" aria-hidden="true">
         <div class="eq-wrap">
           <div class="eq-top">
             <div>
               <div class="eq-title">Equalizer</div>
               <div style="font-size:11px;color:rgba(154,163,178,0.95);margin-top:4px;">
-                Preamp + 10-band EQ (31Hz → 16kHz). Stored locally.
+                Preamp + 10-band EQ (31Hz → 16kHz). Presets + Bass Boost. Stored locally.
               </div>
             </div>
             <div class="eq-actions">
-              <button id="eqEnableBtn" class="mini" type="button" aria-pressed="true" title="Enable/disable EQ">EQ: On</button>
-              <button id="eqResetBtn" class="mini" type="button" title="Reset EQ">Reset</button>
+              <button id="eqEnableBtn" class="mini" type="button" aria-pressed="true">EQ: On</button>
+              <button id="eqResetBtn" class="mini" type="button">Reset</button>
             </div>
           </div>
 
@@ -284,46 +267,16 @@
               <input id="eq_pre" type="range" min="-12" max="12" step="0.1" value="0" />
             </div>
 
-            <div class="eq-band">
-              <div class="lbl"><span>31 Hz</span><span class="val" id="val_31">0 dB</span></div>
-              <input id="eq_31" type="range" min="-12" max="12" step="0.1" value="0" />
-            </div>
-            <div class="eq-band">
-              <div class="lbl"><span>62 Hz</span><span class="val" id="val_62">0 dB</span></div>
-              <input id="eq_62" type="range" min="-12" max="12" step="0.1" value="0" />
-            </div>
-            <div class="eq-band">
-              <div class="lbl"><span>125 Hz</span><span class="val" id="val_125">0 dB</span></div>
-              <input id="eq_125" type="range" min="-12" max="12" step="0.1" value="0" />
-            </div>
-            <div class="eq-band">
-              <div class="lbl"><span>250 Hz</span><span class="val" id="val_250">0 dB</span></div>
-              <input id="eq_250" type="range" min="-12" max="12" step="0.1" value="0" />
-            </div>
-            <div class="eq-band">
-              <div class="lbl"><span>500 Hz</span><span class="val" id="val_500">0 dB</span></div>
-              <input id="eq_500" type="range" min="-12" max="12" step="0.1" value="0" />
-            </div>
-            <div class="eq-band">
-              <div class="lbl"><span>1 kHz</span><span class="val" id="val_1000">0 dB</span></div>
-              <input id="eq_1000" type="range" min="-12" max="12" step="0.1" value="0" />
-            </div>
-            <div class="eq-band">
-              <div class="lbl"><span>2 kHz</span><span class="val" id="val_2000">0 dB</span></div>
-              <input id="eq_2000" type="range" min="-12" max="12" step="0.1" value="0" />
-            </div>
-            <div class="eq-band">
-              <div class="lbl"><span>4 kHz</span><span class="val" id="val_4000">0 dB</span></div>
-              <input id="eq_4000" type="range" min="-12" max="12" step="0.1" value="0" />
-            </div>
-            <div class="eq-band">
-              <div class="lbl"><span>8 kHz</span><span class="val" id="val_8000">0 dB</span></div>
-              <input id="eq_8000" type="range" min="-12" max="12" step="0.1" value="0" />
-            </div>
-            <div class="eq-band">
-              <div class="lbl"><span>16 kHz</span><span class="val" id="val_16000">0 dB</span></div>
-              <input id="eq_16000" type="range" min="-12" max="12" step="0.1" value="0" />
-            </div>
+            <div class="eq-band"><div class="lbl"><span>31 Hz</span><span class="val" id="val_31">0 dB</span></div><input id="eq_31" type="range" min="-12" max="12" step="0.1" value="0" /></div>
+            <div class="eq-band"><div class="lbl"><span>62 Hz</span><span class="val" id="val_62">0 dB</span></div><input id="eq_62" type="range" min="-12" max="12" step="0.1" value="0" /></div>
+            <div class="eq-band"><div class="lbl"><span>125 Hz</span><span class="val" id="val_125">0 dB</span></div><input id="eq_125" type="range" min="-12" max="12" step="0.1" value="0" /></div>
+            <div class="eq-band"><div class="lbl"><span>250 Hz</span><span class="val" id="val_250">0 dB</span></div><input id="eq_250" type="range" min="-12" max="12" step="0.1" value="0" /></div>
+            <div class="eq-band"><div class="lbl"><span>500 Hz</span><span class="val" id="val_500">0 dB</span></div><input id="eq_500" type="range" min="-12" max="12" step="0.1" value="0" /></div>
+            <div class="eq-band"><div class="lbl"><span>1 kHz</span><span class="val" id="val_1000">0 dB</span></div><input id="eq_1000" type="range" min="-12" max="12" step="0.1" value="0" /></div>
+            <div class="eq-band"><div class="lbl"><span>2 kHz</span><span class="val" id="val_2000">0 dB</span></div><input id="eq_2000" type="range" min="-12" max="12" step="0.1" value="0" /></div>
+            <div class="eq-band"><div class="lbl"><span>4 kHz</span><span class="val" id="val_4000">0 dB</span></div><input id="eq_4000" type="range" min="-12" max="12" step="0.1" value="0" /></div>
+            <div class="eq-band"><div class="lbl"><span>8 kHz</span><span class="val" id="val_8000">0 dB</span></div><input id="eq_8000" type="range" min="-12" max="12" step="0.1" value="0" /></div>
+            <div class="eq-band"><div class="lbl"><span>16 kHz</span><span class="val" id="val_16000">0 dB</span></div><input id="eq_16000" type="range" min="-12" max="12" step="0.1" value="0" /></div>
           </div>
         </div>
       </div>
