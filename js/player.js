@@ -1,8 +1,9 @@
 /* ==========================================================
-   MANEIT MUSIC — player.js (v2)
+   MANEIT MUSIC — player.js (v3)
    - Shuffle: All / Artist
    - Repeat: Off / One / All
    - 10-band EQ + Preamp (31Hz → 16kHz, ±12dB)
+   - Presets dropdown (~15) + Bass Boost toggle
    - CORS-safe: WebAudio only if allowed; sound ALWAYS works
    ========================================================== */
 
@@ -22,6 +23,9 @@
   const shuffleAllBtn = $("shuffleAllBtn");
   const shuffleArtistBtn = $("shuffleArtistBtn");
   const repeatBtn = $("repeatBtn");
+
+  const presetSelect = $("presetSelect");
+  const bassBtn = $("bassBtn");
 
   const eqBtn = $("eqBtn");
   const eqPanel = $("eqPanel");
@@ -64,22 +68,24 @@
 
   // Storage keys
   const LS = {
-    VOL: "maneit_music_vol_v3",
-    SHUFFLE: "maneit_music_shuffle_v3", // off|all|artist
-    REPEAT: "maneit_music_repeat_v3",   // off|one|all
-    EQ_OPEN: "maneit_music_eq_open_v3",
-    EQ_ENABLED: "maneit_music_eq_enabled_v3",
-    EQ_PRE: "maneit_music_eq_pre_v3",
-    EQ_31: "maneit_music_eq_31_v3",
-    EQ_62: "maneit_music_eq_62_v3",
-    EQ_125: "maneit_music_eq_125_v3",
-    EQ_250: "maneit_music_eq_250_v3",
-    EQ_500: "maneit_music_eq_500_v3",
-    EQ_1000: "maneit_music_eq_1000_v3",
-    EQ_2000: "maneit_music_eq_2000_v3",
-    EQ_4000: "maneit_music_eq_4000_v3",
-    EQ_8000: "maneit_music_eq_8000_v3",
-    EQ_16000: "maneit_music_eq_16000_v3"
+    VOL: "maneit_music_vol_v4",
+    SHUFFLE: "maneit_music_shuffle_v4", // off|all|artist
+    REPEAT: "maneit_music_repeat_v4",   // off|one|all
+    EQ_OPEN: "maneit_music_eq_open_v4",
+    EQ_ENABLED: "maneit_music_eq_enabled_v4",
+    PRESET: "maneit_music_preset_v4",
+    BASS: "maneit_music_bassboost_v4", // 0|1
+    EQ_PRE: "maneit_music_eq_pre_v4",
+    EQ_31: "maneit_music_eq_31_v4",
+    EQ_62: "maneit_music_eq_62_v4",
+    EQ_125: "maneit_music_eq_125_v4",
+    EQ_250: "maneit_music_eq_250_v4",
+    EQ_500: "maneit_music_eq_500_v4",
+    EQ_1000: "maneit_music_eq_1000_v4",
+    EQ_2000: "maneit_music_eq_2000_v4",
+    EQ_4000: "maneit_music_eq_4000_v4",
+    EQ_8000: "maneit_music_eq_8000_v4",
+    EQ_16000: "maneit_music_eq_16000_v4"
   };
 
   // State
@@ -93,13 +99,17 @@
   let queue = [];
   let queuePos = 0;
 
+  // Presets state
+  let presetKey = "custom";
+  let bassBoostOn = false;
+
   // WebAudio/EQ state
   let audioCtx = null;
   let srcNode = null;
   let preGain = null;
   let filters = []; // 10 filters
   let eqEnabled = true;
-  let webAudioAllowed = false; // only true if CORS check passes for current track
+  let webAudioAllowed = false; // true if CORS check passes for current track
 
   // Helpers
   function showError(msg) {
@@ -228,7 +238,6 @@
     const n = Math.round(parseFloat(v) * 10) / 10;
     el.textContent = `${n} dB`;
   }
-
   function syncEqLabels() {
     setEqLabel(val_pre, eq_pre.value);
     for (let i = 0; i < eqSliders.length; i++) setEqLabel(eqVals[i], eqSliders[i].value);
@@ -278,20 +287,25 @@
   }
 
   function resetEq() {
+    presetKey = "custom";
+    setPresetSelect("custom");
+
     eq_pre.value = "0";
     eqSliders.forEach(s => s.value = "0");
+    bassBoostOn = false;
+    updateBassBtn();
+
     syncEqLabels();
     persistEq();
+    savePresetState();
     applyEqSettings();
   }
 
   function openEq(open) {
     const shouldOpen = !!open;
 
-    // if WebAudio isn't allowed, keep EQ closed and show locked state
     if (shouldOpen && !webAudioAllowed) {
-      eqBtn.classList.add("locked");
-      eqBtn.textContent = "EQ: Locked (CORS)";
+      setEqLocked(true);
       showError("EQ locked: enable CORS headers on the MP3 host to use WebAudio EQ.");
       return;
     }
@@ -303,13 +317,154 @@
     try { localStorage.setItem(LS.EQ_OPEN, shouldOpen ? "1" : "0"); } catch {}
   }
 
+  function setEqLocked(locked) {
+    // Lock/unlock EQ + presets UI
+    const lock = !!locked;
+    eqBtn.classList.toggle("locked", lock);
+    presetSelect.disabled = lock;
+    bassBtn.disabled = lock;
+
+    if (lock) {
+      eqBtn.textContent = "EQ: Locked (CORS)";
+      bassBtn.classList.remove("on");
+      bassBtn.setAttribute("aria-pressed", "false");
+    } else {
+      eqBtn.textContent = "EQ";
+    }
+  }
+
+  // ===== Presets =====
+  // gains array is [31,62,125,250,500,1k,2k,4k,8k,16k]
+  const PRESETS = {
+    flat:              { name: "Flat (Reference)", pre: 0.0,  gains: [0,0,0,0,0,0,0,0,0,0] },
+
+    rap_808:           { name: "Rap / 808 (Clean Punch)", pre: -2.5, gains: [4.5,3.0,1.5,0,-0.5,-0.5,0.5,1.5,1.0,0.5] },
+    trap_sub:          { name: "Trap (Sub + Snap)", pre: -3.0, gains: [5.5,3.5,1.0,-0.5,-1.0,0.5,1.5,2.0,1.0,0.0] },
+    hagle_vocal:       { name: "Hagle / Norwegian Rap (Vocal Forward)", pre: -2.0, gains: [3.0,2.0,0.5,-0.5,-1.0,1.5,2.0,2.0,1.0,0.5] },
+
+    eurodance:         { name: "Eurodance (Bright + Tight)", pre: -2.0, gains: [2.0,1.5,0.5,0.0,-0.5,1.0,2.5,3.0,2.0,1.0] },
+
+    house:             { name: "House (Warm Groove)", pre: -2.0, gains: [3.0,2.0,1.0,0.0,-0.5,0.5,1.0,1.5,1.0,0.5] },
+    deep_house:        { name: "Deep House (Warm + Smooth)", pre: -2.5, gains: [3.5,2.5,1.5,0.5,0.0,-0.5,0.0,0.8,0.8,0.5] },
+    techno:            { name: "Techno (Mid Drive)", pre: -2.5, gains: [2.5,2.0,1.0,0.0,-0.5,1.0,2.0,1.5,1.0,0.5] },
+
+    hardstyle:         { name: "Hardstyle (Kick + Bite)", pre: -4.0, gains: [5.0,3.0,0.0,-1.0,-1.0,1.0,2.5,3.0,1.5,0.5] },
+    happy_hardstyle:   { name: "Happy Hardstyle (Bright + Pump)", pre: -4.0, gains: [4.5,2.5,0.0,-0.5,-0.5,1.5,3.0,3.5,2.0,1.0] },
+
+    dnb:               { name: "DnB (Sub + Air)", pre: -3.0, gains: [4.5,3.0,1.0,-0.5,-1.0,0.5,1.5,2.5,2.0,1.0] },
+    dubstep:           { name: "Dubstep (Wobble Weight)", pre: -4.0, gains: [6.0,3.5,0.0,-1.0,-1.5,0.5,1.0,2.0,1.5,0.5] },
+
+    pop_clean:         { name: "Pop (Clean + Gloss)", pre: -2.0, gains: [2.0,1.0,0.0,0.0,0.0,1.0,2.0,2.0,1.5,1.0] },
+    metal:             { name: "Metal (Crunch + Clarity)", pre: -3.0, gains: [2.0,1.0,0.0,0.5,1.0,1.5,2.0,1.0,0.0,0.0] },
+
+    voice:             { name: "Voice / Podcast (Clear Speech)", pre: -1.5, gains: [-2.0,-1.0,0.0,1.0,2.0,2.5,2.0,1.0,0.0,-0.5] },
+    night:             { name: "Night (Low Volume, Loudness-ish)", pre: -3.0, gains: [3.5,2.0,0.5,-0.5,-1.0,1.0,2.0,1.0,0.5,0.0] }
+  };
+
+  // Bass boost offsets (adds on top of preset/slider)
+  // We keep it mild and also lower preamp to avoid clipping.
+  function bassOffsets() {
+    // +3dB @31, +2dB @62, +1dB @125, +0.5 @250
+    return [3.0, 2.0, 1.0, 0.5, 0,0,0,0,0,0];
+  }
+  function bassPreComp() {
+    // reduce preamp when bass boost is on
+    return -2.0;
+  }
+
+  function fillPresetDropdown() {
+    // Build options once
+    presetSelect.innerHTML = "";
+    const optCustom = document.createElement("option");
+    optCustom.value = "custom";
+    optCustom.textContent = "Preset: Custom";
+    presetSelect.appendChild(optCustom);
+
+    // Group-ish order
+    const order = [
+      "flat",
+      "rap_808","trap_sub","hagle_vocal",
+      "eurodance",
+      "house","deep_house","techno",
+      "hardstyle","happy_hardstyle",
+      "dnb","dubstep",
+      "pop_clean","metal",
+      "voice","night"
+    ];
+
+    order.forEach(key => {
+      const p = PRESETS[key];
+      if (!p) return;
+      const opt = document.createElement("option");
+      opt.value = key;
+      opt.textContent = `Preset: ${p.name}`;
+      presetSelect.appendChild(opt);
+    });
+  }
+
+  function setPresetSelect(key) {
+    presetSelect.value = key;
+  }
+
+  function savePresetState() {
+    try {
+      localStorage.setItem(LS.PRESET, presetKey);
+      localStorage.setItem(LS.BASS, bassBoostOn ? "1" : "0");
+    } catch {}
+  }
+
+  function loadPresetState() {
+    try {
+      const p = localStorage.getItem(LS.PRESET);
+      if (p) presetKey = p;
+      bassBoostOn = localStorage.getItem(LS.BASS) === "1";
+    } catch {}
+  }
+
+  function updateBassBtn() {
+    bassBtn.classList.toggle("on", bassBoostOn);
+    bassBtn.setAttribute("aria-pressed", bassBoostOn ? "true" : "false");
+  }
+
+  function applyPresetToSliders(key) {
+    const p = PRESETS[key];
+    if (!p) return;
+
+    presetKey = key;
+    setPresetSelect(key);
+
+    const offsets = bassBoostOn ? bassOffsets() : Array(10).fill(0);
+    const preAdj = bassBoostOn ? bassPreComp() : 0;
+
+    // write slider values
+    const basePre = p.pre + preAdj;
+    eq_pre.value = String(clamp(basePre, -12, 12));
+
+    for (let i = 0; i < 10; i++) {
+      const v = (p.gains[i] || 0) + offsets[i];
+      eqSliders[i].value = String(clamp(v, -12, 12));
+    }
+
+    syncEqLabels();
+    persistEq();
+    savePresetState();
+    applyEqSettings();
+  }
+
+  function readSlidersAsCustom() {
+    // User touched sliders manually -> custom
+    presetKey = "custom";
+    setPresetSelect("custom");
+    savePresetState();
+  }
+
+  // ===== WebAudio graph =====
   async function ensureAudioGraph() {
     if (!webAudioAllowed) return false;
 
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === "suspended") { try { await audioCtx.resume(); } catch {} }
 
-    // Create source ONLY when allowed (prevents silent-output bug)
     if (!srcNode) srcNode = audioCtx.createMediaElementSource(audio);
 
     if (!preGain) {
@@ -338,12 +493,10 @@
   function reconnectAudioGraph() {
     if (!audioCtx || !srcNode) return;
 
-    // Disconnect chain
     disconnectSafe(srcNode);
     if (preGain) disconnectSafe(preGain);
     filters.forEach(disconnectSafe);
 
-    // Connect
     if (webAudioAllowed && eqEnabled && preGain && filters.length) {
       srcNode.connect(preGain);
       let last = preGain;
@@ -363,7 +516,6 @@
   }
 
   function setActiveUI(track) {
-    // row highlight
     library.forEach(t => t.rowEl && t.rowEl.classList.remove("is-playing"));
     library.forEach(t => t.playBtnEl && (t.playBtnEl.textContent = "Play"));
 
@@ -399,30 +551,22 @@
     // Determine whether WebAudio is allowed for THIS file
     webAudioAllowed = await corsAllowsWebAudio(url);
 
-    // Update EQ button state based on allowed
     if (webAudioAllowed) {
-      eqBtn.classList.remove("locked");
-      eqBtn.textContent = "EQ";
+      setEqLocked(false);
     } else {
-      eqBtn.classList.add("locked");
-      eqBtn.textContent = "EQ: Locked (CORS)";
-      // close panel if open
+      setEqLocked(true);
       openEq(false);
     }
 
     audio.src = url;
 
     try {
-      // If allowed, build graph before play (safe)
       if (webAudioAllowed) await ensureAudioGraph();
-
       await audio.play();
       isPlaying = true;
       playPauseBtn.textContent = "Pause";
 
-      // rebuild queue for shuffles
       if (shuffleMode !== "off") buildQueueFromCurrent();
-
     } catch (e) {
       isPlaying = false;
       playPauseBtn.textContent = "Play";
@@ -434,7 +578,6 @@
     audio.pause();
     isPlaying = false;
     playPauseBtn.textContent = "Play";
-
     const t = currentTrack();
     if (t?.playBtnEl) t.playBtnEl.textContent = "Play";
     if (t?.rowEl) t.rowEl.classList.remove("is-playing");
@@ -443,10 +586,7 @@
   function togglePlayPause() {
     if (!audio.src) return;
 
-    if (isPlaying) {
-      pause();
-      return;
-    }
+    if (isPlaying) { pause(); return; }
 
     audio.play().then(() => {
       isPlaying = true;
@@ -488,7 +628,6 @@
 
   function prev() {
     if (!library.length) return;
-
     if (audio.currentTime > 3) { audio.currentTime = 0; return; }
 
     if (shuffleMode !== "off") {
@@ -536,7 +675,7 @@
   });
 
   audio.addEventListener("ended", () => {
-    if (repeatMode === "one") return; // native loop
+    if (repeatMode === "one") return;
     if (repeatMode === "all" || shuffleMode !== "off") { next(); return; }
     isPlaying = false;
     playPauseBtn.textContent = "Play";
@@ -573,17 +712,57 @@
   });
   audio.addEventListener("volumechange", () => { vol.value = String(audio.volume); });
 
-  // EQ wire
+  // EQ wire: manual move -> custom preset
   const eqInputs = [eq_pre, ...eqSliders];
   eqInputs.forEach(inp => {
     inp.addEventListener("input", () => {
       syncEqLabels();
       persistEq();
       applyEqSettings();
+      readSlidersAsCustom();
     });
   });
 
-  // Restore modes + EQ state
+  // Preset UI wire
+  presetSelect.addEventListener("change", () => {
+    const k = presetSelect.value;
+    if (k === "custom") {
+      presetKey = "custom";
+      savePresetState();
+      return;
+    }
+    applyPresetToSliders(k);
+  });
+
+  bassBtn.addEventListener("click", () => {
+    if (bassBtn.disabled) return;
+    bassBoostOn = !bassBoostOn;
+    updateBassBtn();
+    savePresetState();
+
+    // Re-apply preset if any, otherwise just add offsets on top of current slider values (simple)
+    if (presetKey !== "custom" && PRESETS[presetKey]) {
+      applyPresetToSliders(presetKey);
+    } else {
+      // Custom: apply bass offsets directly to current slider values + preamp comp
+      const off = bassOffsets();
+      const preC = bassBoostOn ? bassPreComp() : 0;
+      const preBase = parseFloat(eq_pre.value) || 0;
+      eq_pre.value = String(clamp(preBase + preC, -12, 12));
+
+      for (let i = 0; i < 10; i++) {
+        const base = parseFloat(eqSliders[i].value) || 0;
+        const add = bassBoostOn ? off[i] : -off[i];
+        eqSliders[i].value = String(clamp(base + add, -12, 12));
+      }
+      syncEqLabels();
+      persistEq();
+      applyEqSettings();
+      readSlidersAsCustom();
+    }
+  });
+
+  // Restore modes + EQ state + preset state
   (function restoreState() {
     try {
       const sm = localStorage.getItem(LS.SHUFFLE);
@@ -594,21 +773,32 @@
 
       const open = localStorage.getItem(LS.EQ_OPEN) === "1";
       if (open) openEq(true);
-
     } catch {}
 
     applyShuffleUI();
     applyRepeatUI();
 
+    // fill presets + load state
+    fillPresetDropdown();
+    loadPresetState();
+    setPresetSelect(presetKey);
+    updateBassBtn();
+
+    // EQ slider state
     loadEq();
     setEqEnabled(eqEnabled);
+
+    // If a preset is selected (not custom), enforce it on sliders at load
+    if (presetKey !== "custom" && PRESETS[presetKey]) {
+      applyPresetToSliders(presetKey);
+    } else {
+      savePresetState();
+    }
   })();
 
   // Public API for ui.js
   window.ManeitPlayer = {
-    setLibrary(items) {
-      library = Array.isArray(items) ? items : [];
-    },
+    setLibrary(items) { library = Array.isArray(items) ? items : []; },
     playTrack(track) {
       if (!track || typeof track.__index !== "number") return Promise.resolve();
       return playIndex(track.__index);
