@@ -1,20 +1,15 @@
 /* ==========================================================
-   MANEIT MUSIC — ui.js (v2)
-   - Renders projects into #projectsList (your real container)
-   - Loads data/tracks.json with cache-bust
-   - Wires Play buttons to ManeitPlayer.playTrack()
+   MANEIT MUSIC — ui.js (v3)
+   - Renders into #projectsList
+   - Adds artist/projectTitle metadata for Shuffle: Artist
    ========================================================== */
 
 (() => {
   "use strict";
 
   const TRACKS_URL = "data/tracks.json";
-
   const projectsEl = document.getElementById("projectsList");
-  if (!projectsEl) {
-    console.warn("ui.js: #projectsList not found");
-    return;
-  }
+  if (!projectsEl) return;
 
   function safeUrl(path) {
     try {
@@ -73,16 +68,14 @@
           title: track.title || "Untitled",
           mp3,
           wav,
+          artist: track.artist || projectTitle,
           projectTitle,
           rowEl: row,
           playBtnEl: playBtn
         };
 
         playBtn.addEventListener("click", () => {
-          if (!window.ManeitPlayer || typeof window.ManeitPlayer.playTrack !== "function") {
-            console.warn("ui.js: ManeitPlayer.playTrack not found");
-            return;
-          }
+          if (!window.ManeitPlayer || typeof window.ManeitPlayer.playTrack !== "function") return;
           window.ManeitPlayer.playTrack(item);
         });
 
