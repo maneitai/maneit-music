@@ -1,637 +1,764 @@
-/* ============================= */
-/* MANEIT MUSIC — PLAYER LOGIC+  */
-/* (shuffle/repeat/prev/next/vol */
-/*  viz + equalizer)             */
-/* ============================= */
+/* ==========================================================
+   MANEIT MUSIC — PLAYER (v5)
+   - Docked bottom player (never blocks playlists)
+   - 10-band EQ full range + preamp (±12 dB)
+   - Shuffle (all/artist), repeat (off/one/all), prev/next
+   - Robust URL handling (fixes accidental //)
+   - Emits nowplaying events for UI
+   ========================================================== */
 
-const audio = document.getElementById("audio");
-const player = document.getElementById("player");
-const titleEl = document.getElementById("player-title");
-const playPauseBtn = document.getElementById("playPause");
-const downloadMp3 = document.getElementById("downloadMp3");
-const downloadWav = document.getElementById("downloadWav");
+(() => {
+  "use strict";
 
-// Optional footer controls (must exist in HTML if you want them)
-const prevBtn = document.getElementById("prevBtn");
-const nextBtn = document.getElementById("nextBtn");
-const shuffleAllBtn = document.getElementById("shuffleAllBtn");
-const shuffleArtistBtn = document.getElementById("shuffleArtistBtn");
-const repeatBtn = document.getElementById("repeatBtn");
-const vizBtn = document.getElementById("vizBtn");
-const eqBtn = document.getElementById("eqBtn");
-const vol = document.getElementById("vol");
-
-// Visualizer panel (optional)
-const vizPanel = document.getElementById("vizPanel");
-const vizCanvas = document.getElementById("viz");
-const vizCtx = vizCanvas ? vizCanvas.getContext("2d") : null;
-
-// EQ panel (optional)
-const eqPanel = document.getElementById("eqPanel");
-const eqEnableBtn = document.getElementById("eqEnableBtn");
-const eqResetBtn = document.getElementById("eqResetBtn");
-
-const eq_pre = document.getElementById("eq_pre");
-const eq_60 = document.getElementById("eq_60");
-const eq_170 = document.getElementById("eq_170");
-const eq_350 = document.getElementById("eq_350");
-const eq_1000 = document.getElementById("eq_1000");
-const eq_3500 = document.getElementById("eq_3500");
-
-const val_pre = document.getElementById("val_pre");
-const val_60 = document.getElementById("val_60");
-const val_170 = document.getElementById("val_170");
-const val_350 = document.getElementById("val_350");
-const val_1000 = document.getElementById("val_1000");
-const val_3500 = document.getElementById("val_3500");
-
-let isPlaying = false;
-
-// ===== Global playlist state (fed by ui.js) =====
-let __LIBRARY__ = [];       // array of tracks (flattened)
-let __ACTIVE_INDEX__ = -1;  // index in __LIBRARY__
-
-let shuffleMode = "off";    // off | all | artist
-let repeatMode = "off";     // off | one | all
-
-let queue = [];
-let queuePos = 0;
-
-// ===== Web Audio graph state =====
-let audioCtx = null;
-let analyser = null;
-let srcNode = null;
-let rafId = 0;
-let vizOn = false;
-
-let eqEnabled = true;
-let preGain = null;
-let eqNodes = { f60:null, f170:null, f350:null, f1000:null, f3500:null };
-
-// ===== LocalStorage keys =====
-const LS = {
-  VOL: "maneit_music_vol_v4",
-  SHUFFLE: "maneit_music_shuffle_v4", // off|all|artist
-  REPEAT: "maneit_music_repeat_v4",   // off|one|all
-  VIZ: "maneit_music_viz_v4",         // 0|1
-  EQ_OPEN: "maneit_music_eq_open_v4", // 0|1
-  EQ_ENABLED: "maneit_music_eq_enabled_v4", // 0|1
-  EQ_PRE: "maneit_music_eq_pre_v4",
-  EQ_60: "maneit_music_eq_60_v4",
-  EQ_170: "maneit_music_eq_170_v4",
-  EQ_350: "maneit_music_eq_350_v4",
-  EQ_1000: "maneit_music_eq_1000_v4",
-  EQ_3500: "maneit_music_eq_3500_v4"
-};
-
-function clamp(n, a, b) { return Math.min(b, Math.max(a, n)); }
-function safeUrl(path) { try { return encodeURI(path); } catch { return path; } }
-
-function fisherYates(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-function persistState() {
-  try {
-    localStorage.setItem(LS.VOL, String(audio.volume));
-    localStorage.setItem(LS.SHUFFLE, shuffleMode);
-    localStorage.setItem(LS.REPEAT, repeatMode);
-    localStorage.setItem(LS.VIZ, vizOn ? "1" : "0");
-
-    if (eqPanel) localStorage.setItem(LS.EQ_OPEN, eqPanel.classList.contains("show") ? "1" : "0");
-    localStorage.setItem(LS.EQ_ENABLED, eqEnabled ? "1" : "0");
-
-    if (eq_pre) localStorage.setItem(LS.EQ_PRE, String(eq_pre.value));
-    if (eq_60) localStorage.setItem(LS.EQ_60, String(eq_60.value));
-    if (eq_170) localStorage.setItem(LS.EQ_170, String(eq_170.value));
-    if (eq_350) localStorage.setItem(LS.EQ_350, String(eq_350.value));
-    if (eq_1000) localStorage.setItem(LS.EQ_1000, String(eq_1000.value));
-    if (eq_3500) localStorage.setItem(LS.EQ_3500, String(eq_3500.value));
-  } catch {}
-}
-
-function loadState() {
-  try {
-    const v = parseFloat(localStorage.getItem(LS.VOL));
-    if (isFinite(v)) audio.volume = clamp(v, 0, 1);
-
-    const sm = localStorage.getItem(LS.SHUFFLE);
-    if (sm === "off" || sm === "all" || sm === "artist") shuffleMode = sm;
-
-    const rm = localStorage.getItem(LS.REPEAT);
-    if (rm === "off" || rm === "one" || rm === "all") repeatMode = rm;
-
-    vizOn = localStorage.getItem(LS.VIZ) === "1";
-    eqEnabled = localStorage.getItem(LS.EQ_ENABLED) !== "0";
-
-    if (eq_pre)  { const x = localStorage.getItem(LS.EQ_PRE);   if (x !== null) eq_pre.value = x; }
-    if (eq_60)   { const x = localStorage.getItem(LS.EQ_60);    if (x !== null) eq_60.value = x; }
-    if (eq_170)  { const x = localStorage.getItem(LS.EQ_170);   if (x !== null) eq_170.value = x; }
-    if (eq_350)  { const x = localStorage.getItem(LS.EQ_350);   if (x !== null) eq_350.value = x; }
-    if (eq_1000) { const x = localStorage.getItem(LS.EQ_1000);  if (x !== null) eq_1000.value = x; }
-    if (eq_3500) { const x = localStorage.getItem(LS.EQ_3500);  if (x !== null) eq_3500.value = x; }
-  } catch {}
-}
-
-function setMiniOn(btn, on) {
-  if (!btn) return;
-  btn.classList.toggle("on", !!on);
-  btn.setAttribute("aria-pressed", String(!!on));
-}
-
-function applyShuffleUI() {
-  setMiniOn(shuffleAllBtn, shuffleMode === "all");
-  setMiniOn(shuffleArtistBtn, shuffleMode === "artist");
-}
-
-function applyRepeatUI() {
-  if (!repeatBtn) return;
-  repeatBtn.dataset.mode = repeatMode;
-  repeatBtn.textContent =
-    repeatMode === "off" ? "Repeat: Off" :
-    repeatMode === "one" ? "Repeat: One" :
-    "Repeat: All";
-  audio.loop = (repeatMode === "one");
-}
-
-function cycleRepeat() {
-  const order = ["off", "one", "all"];
-  repeatMode = order[(order.indexOf(repeatMode) + 1) % order.length];
-  applyRepeatUI();
-  persistState();
-}
-
-function currentArtistKey() {
-  const t = __LIBRARY__[__ACTIVE_INDEX__];
-  if (!t) return null;
-  return (t.artist || t.projectTitle || "").trim().toLowerCase() || null;
-}
-
-function buildQueueFromCurrent() {
-  if (!__LIBRARY__.length || __ACTIVE_INDEX__ < 0) return;
-
-  let candidates = [];
-
-  if (shuffleMode === "all") {
-    candidates = __LIBRARY__.map((_, i) => i).filter(i => i !== __ACTIVE_INDEX__);
-  } else if (shuffleMode === "artist") {
-    const key = currentArtistKey();
-    candidates = __LIBRARY__
-      .map((it, i) => ({ it, i }))
-      .filter(x => x.i !== __ACTIVE_INDEX__)
-      .filter(x => ((x.it.artist || x.it.projectTitle || "").trim().toLowerCase()) === key)
-      .map(x => x.i);
-  } else {
-    queue = [];
-    queuePos = 0;
-    return;
-  }
-
-  fisherYates(candidates);
-  queue = [__ACTIVE_INDEX__, ...candidates];
-  queuePos = 0;
-}
-
-function setShuffleMode(mode) {
-  shuffleMode = mode; // off|all|artist
-  applyShuffleUI();
-  if (shuffleMode !== "off") buildQueueFromCurrent();
-  else { queue = []; queuePos = 0; }
-  persistState();
-}
-
-// ===== Web Audio / EQ / Viz =====
-function dbToGain(db) { return Math.pow(10, db / 20); }
-function disconnectSafe(node) { try { node.disconnect(); } catch {} }
-
-function setDbLabel(el, v) {
-  if (!el) return;
-  const n = Math.round(parseFloat(v) * 10) / 10;
-  el.textContent = `${n} dB`;
-}
-
-function syncEqLabels() {
-  if (eq_pre) setDbLabel(val_pre, eq_pre.value);
-  if (eq_60) setDbLabel(val_60, eq_60.value);
-  if (eq_170) setDbLabel(val_170, eq_170.value);
-  if (eq_350) setDbLabel(val_350, eq_350.value);
-  if (eq_1000) setDbLabel(val_1000, eq_1000.value);
-  if (eq_3500) setDbLabel(val_3500, eq_3500.value);
-}
-
-function applyEqSettings() {
-  if (!audioCtx) return;
-
-  const preDb = parseFloat(eq_pre ? eq_pre.value : "0");
-  if (preGain) preGain.gain.value = dbToGain(isFinite(preDb) ? preDb : 0);
-
-  if (eqNodes.f60 && eq_60) eqNodes.f60.gain.value = parseFloat(eq_60.value);
-  if (eqNodes.f170 && eq_170) eqNodes.f170.gain.value = parseFloat(eq_170.value);
-  if (eqNodes.f350 && eq_350) eqNodes.f350.gain.value = parseFloat(eq_350.value);
-  if (eqNodes.f1000 && eq_1000) eqNodes.f1000.gain.value = parseFloat(eq_1000.value);
-  if (eqNodes.f3500 && eq_3500) eqNodes.f3500.gain.value = parseFloat(eq_3500.value);
-}
-
-function applyEqToGraph() {
-  if (!audioCtx || !srcNode || !analyser) return;
-
-  disconnectSafe(srcNode);
-  if (preGain) disconnectSafe(preGain);
-  Object.values(eqNodes).forEach(n => { if (n) disconnectSafe(n); });
-  disconnectSafe(analyser);
-
-  if (eqEnabled) {
-    srcNode.connect(preGain);
-    preGain.connect(eqNodes.f60);
-    eqNodes.f60.connect(eqNodes.f170);
-    eqNodes.f170.connect(eqNodes.f350);
-    eqNodes.f350.connect(eqNodes.f1000);
-    eqNodes.f1000.connect(eqNodes.f3500);
-    eqNodes.f3500.connect(analyser);
-    analyser.connect(audioCtx.destination);
-  } else {
-    srcNode.connect(analyser);
-    analyser.connect(audioCtx.destination);
-  }
-}
-
-async function ensureAudioGraph() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === "suspended") { try { await audioCtx.resume(); } catch {} }
-
-  if (!analyser) {
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 2048;
-    analyser.smoothingTimeConstant = 0.82;
-  }
-
-  if (!preGain) {
-    preGain = audioCtx.createGain();
-    preGain.gain.value = dbToGain(parseFloat(eq_pre ? eq_pre.value : "0"));
-  }
-
-  if (!eqNodes.f60) {
-    eqNodes.f60 = audioCtx.createBiquadFilter();
-    eqNodes.f60.type = "lowshelf";
-    eqNodes.f60.frequency.value = 60;
-    eqNodes.f60.gain.value = parseFloat(eq_60 ? eq_60.value : "0");
-  }
-  if (!eqNodes.f170) {
-    eqNodes.f170 = audioCtx.createBiquadFilter();
-    eqNodes.f170.type = "peaking";
-    eqNodes.f170.frequency.value = 170;
-    eqNodes.f170.Q.value = 1.0;
-    eqNodes.f170.gain.value = parseFloat(eq_170 ? eq_170.value : "0");
-  }
-  if (!eqNodes.f350) {
-    eqNodes.f350 = audioCtx.createBiquadFilter();
-    eqNodes.f350.type = "peaking";
-    eqNodes.f350.frequency.value = 350;
-    eqNodes.f350.Q.value = 1.0;
-    eqNodes.f350.gain.value = parseFloat(eq_350 ? eq_350.value : "0");
-  }
-  if (!eqNodes.f1000) {
-    eqNodes.f1000 = audioCtx.createBiquadFilter();
-    eqNodes.f1000.type = "peaking";
-    eqNodes.f1000.frequency.value = 1000;
-    eqNodes.f1000.Q.value = 1.0;
-    eqNodes.f1000.gain.value = parseFloat(eq_1000 ? eq_1000.value : "0");
-  }
-  if (!eqNodes.f3500) {
-    eqNodes.f3500 = audioCtx.createBiquadFilter();
-    eqNodes.f3500.type = "highshelf";
-    eqNodes.f3500.frequency.value = 3500;
-    eqNodes.f3500.gain.value = parseFloat(eq_3500 ? eq_3500.value : "0");
-  }
-
-  if (!srcNode) {
-    try { srcNode = audioCtx.createMediaElementSource(audio); }
-    catch (e) { console.warn("createMediaElementSource failed:", e); }
-  }
-
-  applyEqToGraph();
-  applyEqSettings();
-}
-
-function startViz() {
-  if (!vizOn || !analyser || !vizCanvas || !vizCtx) return;
-  cancelAnimationFrame(rafId);
-
-  const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
-  const cssW = vizCanvas.clientWidth || 600;
-  const cssH = 120;
-
-  vizCanvas.width = cssW * dpr;
-  vizCanvas.height = cssH * dpr;
-  vizCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-  const data = new Uint8Array(analyser.frequencyBinCount);
-
-  const draw = () => {
-    rafId = requestAnimationFrame(draw);
-    analyser.getByteFrequencyData(data);
-
-    vizCtx.clearRect(0, 0, cssW, cssH);
-
-    vizCtx.globalAlpha = 0.35;
-    vizCtx.fillStyle = "rgba(110,231,255,0.15)";
-    vizCtx.fillRect(0, cssH - 1, cssW, 1);
-    vizCtx.globalAlpha = 1;
-
-    const bars = 90;
-    const step = Math.floor(data.length / bars);
-    const barW = cssW / bars;
-
-    for (let i = 0; i < bars; i++) {
-      const v = data[i * step] / 255;
-      const h = Math.max(2, v * cssH);
-      vizCtx.globalAlpha = 0.20 + v * 0.70;
-      vizCtx.fillStyle = "rgba(232,237,247,0.95)";
-      vizCtx.fillRect(i * barW + 1, cssH - h, Math.max(1, barW - 2), h);
+  // ---------- Helpers ----------
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const el = (tag, attrs = {}, children = []) => {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === "class") n.className = v;
+      else if (k === "html") n.innerHTML = v;
+      else if (k.startsWith("on") && typeof v === "function") n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, String(v));
     }
-    vizCtx.globalAlpha = 1;
+    for (const c of children) n.appendChild(c);
+    return n;
   };
 
-  draw();
-}
-
-function stopViz() {
-  cancelAnimationFrame(rafId);
-  rafId = 0;
-}
-
-function openViz(open) {
-  if (!vizPanel || !vizBtn) return;
-  vizOn = !!open;
-  vizPanel.classList.toggle("show", vizOn);
-  vizPanel.setAttribute("aria-hidden", String(!vizOn));
-  vizBtn.classList.toggle("on", vizOn);
-  vizBtn.setAttribute("aria-expanded", String(vizOn));
-  if (!vizOn) stopViz();
-  else if (analyser) startViz();
-  persistState();
-}
-
-function openEq(open) {
-  if (!eqPanel || !eqBtn) return;
-  const on = !!open;
-  eqPanel.classList.toggle("show", on);
-  eqPanel.setAttribute("aria-hidden", String(!on));
-  eqBtn.classList.toggle("on", on);
-  eqBtn.setAttribute("aria-expanded", String(on));
-  persistState();
-}
-
-function setEqEnabled(on) {
-  eqEnabled = !!on;
-  if (eqEnableBtn) {
-    eqEnableBtn.classList.toggle("on", eqEnabled);
-    eqEnableBtn.setAttribute("aria-pressed", String(eqEnabled));
-    eqEnableBtn.textContent = eqEnabled ? "EQ: On" : "EQ: Off";
-  }
-  applyEqToGraph();
-  persistState();
-}
-
-function resetEq() {
-  if (!eq_pre) return;
-  eq_pre.value = "0";
-  eq_60.value = "0";
-  eq_170.value = "0";
-  eq_350.value = "0";
-  eq_1000.value = "0";
-  eq_3500.value = "0";
-  syncEqLabels();
-  applyEqSettings();
-  persistState();
-}
-
-// ===== Core API: playTrack(track) =====
-// track object is expected to have:
-// { title, mp3, wav?, artist?, projectTitle? }
-async function playTrack(track) {
-  if (!track || !track.mp3) return;
-
-  // Find and set active index if possible
-  if (typeof track.__libIndex === "number") {
-    __ACTIVE_INDEX__ = track.__libIndex;
-  } else {
-    // fallback: match by mp3
-    const idx = __LIBRARY__.findIndex(t => t.mp3 === track.mp3);
-    __ACTIVE_INDEX__ = idx;
-  }
-
-  if (shuffleMode !== "off") buildQueueFromCurrent();
-
-  audio.src = safeUrl(track.mp3);
-
-  titleEl.textContent = track.title || "—";
-
-  if (downloadMp3) downloadMp3.href = safeUrl(track.mp3);
-  if (downloadMp3) downloadMp3.setAttribute("download", (track.title || "track") + ".mp3");
-
-  if (downloadWav) {
-    if (track.wav) {
-      downloadWav.href = safeUrl(track.wav);
-      downloadWav.setAttribute("download", (track.title || "track") + ".wav");
-      downloadWav.style.display = "";
-    } else {
-      // hide if no wav for this track
-      downloadWav.href = "#";
-      downloadWav.style.display = "none";
-    }
-  }
-
-  try {
-    await ensureAudioGraph();
-    await audio.play();
-    playPauseBtn.textContent = "Pause";
-    player.hidden = false;
-    isPlaying = true;
-    if (vizOn) startViz();
-  } catch (e) {
-    // keep UI usable even if autoplay blocked
-    playPauseBtn.textContent = "Play";
-    isPlaying = false;
-    console.warn("play() failed:", e);
-  }
-}
-
-// ===== Allow ui.js to set global library =====
-function setLibrary(flattenedTracks) {
-  __LIBRARY__ = Array.isArray(flattenedTracks) ? flattenedTracks : [];
-}
-
-// ===== Navigation =====
-function nextTrack() {
-  if (!__LIBRARY__.length) return;
-
-  if (shuffleMode !== "off") {
-    if (!queue.length) buildQueueFromCurrent();
-    queuePos++;
-
-    // If artist shuffle has no candidates, queue will be just [current]
-    if (queue.length <= 1) {
-      if (repeatMode === "all") {
-        audio.currentTime = 0;
-        audio.play().catch(() => {});
-        return;
-      }
-      audio.pause();
-      isPlaying = false;
-      playPauseBtn.textContent = "Play";
-      return;
-    }
-
-    if (queuePos >= queue.length) {
-      if (repeatMode === "all") {
-        buildQueueFromCurrent();
-        queuePos = 0;
-      } else {
-        audio.pause();
-        isPlaying = false;
-        playPauseBtn.textContent = "Play";
-        return;
-      }
-    }
-
-    const idx = queue[queuePos];
-    playTrack(__LIBRARY__[idx]);
-    return;
-  }
-
-  let idx = __ACTIVE_INDEX__ + 1;
-  if (idx >= __LIBRARY__.length) {
-    if (repeatMode === "all") idx = 0;
-    else {
-      audio.pause();
-      isPlaying = false;
-      playPauseBtn.textContent = "Play";
-      return;
-    }
-  }
-
-  playTrack(__LIBRARY__[idx]);
-}
-
-function prevTrack() {
-  if (!__LIBRARY__.length) return;
-
-  // standard behavior: if >3s into track, restart
-  if (audio.currentTime > 3) {
-    audio.currentTime = 0;
-    return;
-  }
-
-  if (shuffleMode !== "off") {
-    if (!queue.length) buildQueueFromCurrent();
-    queuePos = Math.max(0, queuePos - 1);
-    const idx = queue[queuePos];
-    playTrack(__LIBRARY__[idx]);
-    return;
-  }
-
-  let idx = __ACTIVE_INDEX__ - 1;
-  if (idx < 0) {
-    if (repeatMode === "all") idx = __LIBRARY__.length - 1;
-    else idx = 0;
-  }
-
-  playTrack(__LIBRARY__[idx]);
-}
-
-// ===== Play/Pause (keeps your original behavior) =====
-playPauseBtn.addEventListener("click", async () => {
-  if (!audio.src) return;
-
-  if (isPlaying) {
-    audio.pause();
-    playPauseBtn.textContent = "Play";
-    isPlaying = false;
-  } else {
+  // preserve https:// but normalize accidental extra slashes elsewhere
+  function safeUrl(path) {
     try {
-      await ensureAudioGraph();
-      await audio.play();
-      playPauseBtn.textContent = "Pause";
-      isPlaying = true;
-      if (vizOn) startViz();
-    } catch (e) {
-      console.warn("play() failed:", e);
-      playPauseBtn.textContent = "Play";
-      isPlaying = false;
+      const s = String(path || "").trim();
+      const normalized = s.replace(/([^:]\/)\/+/g, "$1");
+      return encodeURI(normalized);
+    } catch {
+      return path;
     }
   }
-});
 
-// ===== Optional controls wiring (only if the elements exist) =====
-if (prevBtn) prevBtn.addEventListener("click", () => prevTrack());
-if (nextBtn) nextBtn.addEventListener("click", () => nextTrack());
-
-if (shuffleAllBtn) shuffleAllBtn.addEventListener("click", () => {
-  setShuffleMode(shuffleMode === "all" ? "off" : "all");
-});
-
-if (shuffleArtistBtn) shuffleArtistBtn.addEventListener("click", () => {
-  setShuffleMode(shuffleMode === "artist" ? "off" : "artist");
-});
-
-if (repeatBtn) repeatBtn.addEventListener("click", () => cycleRepeat());
-
-if (vizBtn && vizPanel) vizBtn.addEventListener("click", () => openViz(!vizPanel.classList.contains("show")));
-if (eqBtn && eqPanel) eqBtn.addEventListener("click", () => openEq(!eqPanel.classList.contains("show")));
-
-if (eqEnableBtn) eqEnableBtn.addEventListener("click", () => setEqEnabled(!eqEnabled));
-if (eqResetBtn) eqResetBtn.addEventListener("click", () => resetEq());
-
-if (vol) {
-  vol.addEventListener("input", () => {
-    audio.volume = clamp(parseFloat(vol.value), 0, 1);
-    persistState();
-  });
-  audio.addEventListener("volumechange", () => {
-    vol.value = String(audio.volume);
-  });
-}
-
-// EQ sliders
-const eqInputs = [eq_pre, eq_60, eq_170, eq_350, eq_1000, eq_3500].filter(Boolean);
-eqInputs.forEach(inp => {
-  inp.addEventListener("input", () => {
-    syncEqLabels();
-    applyEqSettings();
-    persistState();
-  });
-});
-
-// Audio ended => next (if repeat all or shuffle)
-audio.addEventListener("ended", () => {
-  if (repeatMode === "one") return; // native loop handles it
-  if (repeatMode === "all" || shuffleMode !== "off") nextTrack();
-  else {
-    isPlaying = false;
-    playPauseBtn.textContent = "Play";
-    stopViz();
+  function clamp(n, a, b) { return Math.min(b, Math.max(a, n)); }
+  function fmtTime(sec) {
+    if (!isFinite(sec) || sec < 0) return "0:00";
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${String(s).padStart(2, "0")}`;
   }
-});
 
-// ===== Init persisted state =====
-loadState();
-if (vol) vol.value = String(audio.volume);
-applyShuffleUI();
-applyRepeatUI();
-syncEqLabels();
+  // ---------- LocalStorage ----------
+  const LS = {
+    VOL: "maneit_music_vol_v5",
+    SHUFFLE: "maneit_music_shuffle_v5", // off|all|artist
+    REPEAT: "maneit_music_repeat_v5",   // off|one|all
+    EQ_OPEN: "maneit_music_eq_open_v5", // 0|1
+    EQ_ENABLED: "maneit_music_eq_enabled_v5", // 0|1
+    EQ_PRE: "maneit_music_eq_pre_v5",
+    EQ_BANDS: "maneit_music_eq_bands_v5" // JSON array
+  };
 
-// restore panels
-if (vizOn && vizPanel) openViz(true);
-if (eqPanel && localStorage.getItem(LS.EQ_OPEN) === "1") openEq(true);
-setEqEnabled(eqEnabled);
+  // ---------- Global playlist state (fed by ui.js) ----------
+  let __LIBRARY__ = [];       // flattened tracks
+  let __ACTIVE_INDEX__ = -1;  // index in __LIBRARY__
 
-// Expose minimal API for ui.js (global)
-window.ManeitPlayer = {
-  playTrack,
-  setLibrary
-};
+  let shuffleMode = "off";    // off | all | artist
+  let repeatMode = "off";     // off | one | all
+
+  let queue = [];
+  let queuePos = 0;
+
+  // ---------- Web Audio / EQ ----------
+  const EQ_FREQS = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
+  const EQ_MIN = -12;
+  const EQ_MAX = 12;
+
+  let audioCtx = null;
+  let srcNode = null;
+  let preGain = null;
+  let analyser = null; // reserved (if you re-add viz later)
+  let eqEnabled = true;
+
+  // band nodes array aligned to EQ_FREQS
+  let eqBands = [];
+
+  async function ensureAudioGraph(audioEl) {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") { try { await audioCtx.resume(); } catch {} }
+
+    if (!srcNode) {
+      try { srcNode = audioCtx.createMediaElementSource(audioEl); }
+      catch (e) { console.warn("createMediaElementSource failed:", e); return; }
+    }
+
+    if (!preGain) {
+      preGain = audioCtx.createGain();
+      preGain.gain.value = dbToGain(getPreDb());
+    }
+
+    if (!eqBands.length) {
+      eqBands = EQ_FREQS.map((hz, i) => {
+        const f = audioCtx.createBiquadFilter();
+        f.type = "peaking";
+        f.frequency.value = hz;
+        f.Q.value = 1.0;
+        f.gain.value = getBandDb(i);
+        return f;
+      });
+    }
+
+    if (!analyser) {
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.82;
+    }
+
+    reconnectGraph();
+  }
+
+  function disconnectSafe(node) { try { node.disconnect(); } catch {} }
+  function dbToGain(db) { return Math.pow(10, db / 20); }
+
+  function reconnectGraph() {
+    if (!audioCtx || !srcNode || !preGain) return;
+
+    // disconnect everything cleanly
+    disconnectSafe(srcNode);
+    disconnectSafe(preGain);
+    eqBands.forEach(disconnectSafe);
+    disconnectSafe(analyser);
+
+    // Connect to destination
+    if (eqEnabled) {
+      srcNode.connect(preGain);
+      let last = preGain;
+      for (const b of eqBands) { last.connect(b); last = b; }
+      last.connect(audioCtx.destination);
+    } else {
+      srcNode.connect(audioCtx.destination);
+    }
+  }
+
+  function setEqEnabled(on) {
+    eqEnabled = !!on;
+    try { localStorage.setItem(LS.EQ_ENABLED, eqEnabled ? "1" : "0"); } catch {}
+    reconnectGraph();
+    renderEqHeader();
+  }
+
+  function setPreDb(db) {
+    const v = clamp(db, EQ_MIN, EQ_MAX);
+    try { localStorage.setItem(LS.EQ_PRE, String(v)); } catch {}
+    if (preGain) preGain.gain.value = dbToGain(v);
+    renderEqHeader();
+  }
+
+  function setBandDb(i, db) {
+    const v = clamp(db, EQ_MIN, EQ_MAX);
+    const arr = getBandsArray();
+    arr[i] = v;
+    try { localStorage.setItem(LS.EQ_BANDS, JSON.stringify(arr)); } catch {}
+    if (eqBands[i]) eqBands[i].gain.value = v;
+  }
+
+  function getPreDb() {
+    try {
+      const s = localStorage.getItem(LS.EQ_PRE);
+      const n = parseFloat(s);
+      return isFinite(n) ? clamp(n, EQ_MIN, EQ_MAX) : 0;
+    } catch { return 0; }
+  }
+
+  function getBandsArray() {
+    try {
+      const s = localStorage.getItem(LS.EQ_BANDS);
+      const arr = JSON.parse(s || "null");
+      if (Array.isArray(arr) && arr.length === EQ_FREQS.length) {
+        return arr.map(x => clamp(parseFloat(x), EQ_MIN, EQ_MAX));
+      }
+    } catch {}
+    return Array(EQ_FREQS.length).fill(0);
+  }
+
+  function getBandDb(i) {
+    const arr = getBandsArray();
+    return isFinite(arr[i]) ? clamp(arr[i], EQ_MIN, EQ_MAX) : 0;
+  }
+
+  // ---------- Player UI (injected) ----------
+  let audioEl;
+  let rootEl;
+  let titleEl, playBtn, prevBtn, nextBtn, shuffleAllBtn, shuffleArtistBtn, repeatBtn;
+  let timeEl, durEl, seekEl, volEl, dlBtn;
+  let eqToggleBtn, eqPanelEl;
+  let eqPreEl, eqPreValEl, eqEnabledBtn, eqResetBtn;
+  let eqBandRows = [];
+
+  function ensurePlayerDom() {
+    // Audio element
+    audioEl = document.getElementById("audio");
+    if (!audioEl) {
+      audioEl = el("audio", { id: "audio", preload: "metadata" });
+      document.body.appendChild(audioEl);
+    }
+
+    // Root container
+    rootEl = document.getElementById("maneit-player");
+    if (!rootEl) {
+      rootEl = el("div", { id: "maneit-player" });
+      document.body.appendChild(rootEl);
+    }
+
+    // Inject base styles (keeps playlists clickable)
+    if (!document.getElementById("maneit-player-style")) {
+      const style = el("style", { id: "maneit-player-style", html: `
+        :root { --maneit-player-h: 140px; }
+        #maneit-player {
+          position: fixed;
+          left: 0; right: 0; bottom: 0;
+          z-index: 9999;
+          background: rgba(10,12,16,0.92);
+          backdrop-filter: blur(10px);
+          border-top: 1px solid rgba(255,255,255,0.08);
+          padding: 12px 14px;
+          color: #e8edf7;
+          font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        }
+        #maneit-player .row { display:flex; align-items:center; gap:10px; }
+        #maneit-player .title { font-weight: 650; letter-spacing: .2px; white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
+        #maneit-player .btn {
+          padding: 8px 10px;
+          border-radius: 12px;
+          border: 1px solid rgba(255,255,255,0.10);
+          background: rgba(255,255,255,0.06);
+          color: inherit;
+          cursor: pointer;
+          user-select: none;
+        }
+        #maneit-player .btn.on { border-color: rgba(110,231,255,0.55); box-shadow: 0 0 0 2px rgba(110,231,255,0.15) inset; }
+        #maneit-player .btn:disabled { opacity: .45; cursor: not-allowed; }
+        #maneit-player .mini { padding: 6px 9px; border-radius: 999px; font-size: 12px; }
+        #maneit-player .grow { flex: 1; min-width: 0; }
+        #maneit-player .meta { opacity:.85; font-size: 12px; }
+        #maneit-player input[type="range"] { width: 100%; }
+        #maneit-player .seek { display:flex; align-items:center; gap:10px; margin-top:10px; }
+        #maneit-player .seek .time { width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
+        #maneit-player .seek .dur { width: 44px; text-align: left; font-variant-numeric: tabular-nums; opacity:.85; }
+        #maneit-eq {
+          margin-top: 12px;
+          padding: 12px;
+          border-radius: 16px;
+          border: 1px solid rgba(255,255,255,0.10);
+          background: rgba(255,255,255,0.04);
+          display: none;
+        }
+        #maneit-eq.show { display: block; }
+        #maneit-eq .eq-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom: 10px; }
+        #maneit-eq .eq-grid { display:grid; grid-template-columns: 90px 1fr 60px; gap:10px; align-items:center; }
+        #maneit-eq .hz { font-size: 12px; opacity:.85; }
+        #maneit-eq .val { font-size: 12px; text-align:right; font-variant-numeric: tabular-nums; opacity:.9; }
+        #maneit-eq input[type="range"] { height: 26px; }
+      `});
+      document.head.appendChild(style);
+    }
+
+    // Build UI if empty
+    if (!rootEl.dataset.ready) {
+      rootEl.dataset.ready = "1";
+      rootEl.innerHTML = "";
+
+      titleEl = el("div", { class: "title grow", id: "player-title" }, []);
+      titleEl.textContent = "—";
+
+      playBtn = el("button", { class: "btn", id: "playPause", type: "button" }); playBtn.textContent = "Play";
+      prevBtn = el("button", { class: "btn mini", id: "prevBtn", type: "button" }); prevBtn.textContent = "Prev";
+      nextBtn = el("button", { class: "btn mini", id: "nextBtn", type: "button" }); nextBtn.textContent = "Next";
+
+      shuffleAllBtn = el("button", { class: "btn mini", id: "shuffleAllBtn", type: "button" }); shuffleAllBtn.textContent = "Shuffle: All";
+      shuffleArtistBtn = el("button", { class: "btn mini", id: "shuffleArtistBtn", type: "button" }); shuffleArtistBtn.textContent = "Shuffle: Artist";
+
+      repeatBtn = el("button", { class: "btn mini", id: "repeatBtn", type: "button" }); repeatBtn.textContent = "Repeat: Off";
+
+      eqToggleBtn = el("button", { class: "btn mini", id: "eqBtn", type: "button" }); eqToggleBtn.textContent = "EQ";
+
+      dlBtn = el("a", { class: "btn mini", id: "downloadMp3", href: "#", download: "track.mp3" });
+      dlBtn.textContent = "Download";
+
+      volEl = el("input", { id: "vol", type: "range", min: "0", max: "1", step: "0.01", value: "0.85" });
+
+      const topRow = el("div", { class: "row" }, [
+        titleEl,
+        prevBtn, playBtn, nextBtn,
+        shuffleAllBtn, shuffleArtistBtn, repeatBtn,
+        eqToggleBtn,
+        dlBtn
+      ]);
+
+      const volRow = el("div", { class: "row", style: "margin-top:10px;" }, [
+        el("div", { class: "meta", style: "width:60px;" }, [document.createTextNode("Volume")]),
+        el("div", { class: "grow" }, [volEl])
+      ]);
+
+      timeEl = el("div", { class: "time", id: "tNow" }); timeEl.textContent = "0:00";
+      durEl = el("div", { class: "dur", id: "tDur" }); durEl.textContent = "0:00";
+      seekEl = el("input", { id: "seek", type: "range", min: "0", max: "1000", step: "1", value: "0" });
+
+      const seekRow = el("div", { class: "seek" }, [timeEl, seekEl, durEl]);
+
+      // EQ panel
+      eqPanelEl = el("div", { id: "maneit-eq" });
+      eqPanelEl.appendChild(el("div", { class: "eq-head" }, [
+        el("div", { class: "meta" }, [document.createTextNode("10-Band EQ (31Hz → 16kHz)")]),
+        el("div", { class: "row" }, [])
+      ]));
+
+      rootEl.appendChild(topRow);
+      rootEl.appendChild(volRow);
+      rootEl.appendChild(seekRow);
+      rootEl.appendChild(eqPanelEl);
+
+      buildEqUi();
+
+      // Measure + expose height for UI padding
+      requestAnimationFrame(() => syncPlayerHeight());
+      window.addEventListener("resize", () => syncPlayerHeight());
+    }
+
+    // re-bind refs after innerHTML build
+    titleEl = document.getElementById("player-title");
+    playBtn = document.getElementById("playPause");
+    prevBtn = document.getElementById("prevBtn");
+    nextBtn = document.getElementById("nextBtn");
+    shuffleAllBtn = document.getElementById("shuffleAllBtn");
+    shuffleArtistBtn = document.getElementById("shuffleArtistBtn");
+    repeatBtn = document.getElementById("repeatBtn");
+    eqToggleBtn = document.getElementById("eqBtn");
+    dlBtn = document.getElementById("downloadMp3");
+    volEl = document.getElementById("vol");
+    timeEl = document.getElementById("tNow");
+    durEl = document.getElementById("tDur");
+    seekEl = document.getElementById("seek");
+    eqPanelEl = document.getElementById("maneit-eq");
+  }
+
+  function syncPlayerHeight() {
+    if (!rootEl) return;
+    const h = rootEl.getBoundingClientRect().height || 140;
+    document.documentElement.style.setProperty("--maneit-player-h", `${Math.ceil(h)}px`);
+    // Tell UI it can re-pad
+    window.dispatchEvent(new CustomEvent("maneit:playerheight", { detail: { height: Math.ceil(h) } }));
+  }
+
+  // ---------- EQ UI ----------
+  function buildEqUi() {
+    if (!eqPanelEl) return;
+
+    // clear
+    eqPanelEl.innerHTML = "";
+
+    const head = el("div", { class: "eq-head" });
+    const left = el("div", { class: "meta" });
+    left.textContent = "10-Band EQ (31Hz → 16kHz)";
+
+    eqEnabledBtn = el("button", { class: "btn mini", type: "button", id: "eqEnableBtn" });
+    eqResetBtn = el("button", { class: "btn mini", type: "button", id: "eqResetBtn" });
+    eqResetBtn.textContent = "Reset";
+
+    head.appendChild(left);
+    head.appendChild(el("div", { class: "row" }, [eqEnabledBtn, eqResetBtn]));
+    eqPanelEl.appendChild(head);
+
+    // Preamp row
+    const preRow = el("div", { class: "eq-grid" });
+    preRow.appendChild(el("div", { class: "hz" }, [document.createTextNode("Preamp")]));
+    eqPreEl = el("input", { id: "eq_pre", type: "range", min: String(EQ_MIN), max: String(EQ_MAX), step: "0.5", value: String(getPreDb()) });
+    preRow.appendChild(eqPreEl);
+    eqPreValEl = el("div", { class: "val", id: "val_pre" });
+    preRow.appendChild(eqPreValEl);
+    eqPanelEl.appendChild(preRow);
+
+    // Band rows
+    eqBandRows = [];
+    const bandVals = getBandsArray();
+
+    EQ_FREQS.forEach((hz, i) => {
+      const row = el("div", { class: "eq-grid" });
+      row.appendChild(el("div", { class: "hz" }, [document.createTextNode(hz >= 1000 ? `${hz / 1000}kHz` : `${hz}Hz`)]));
+      const slider = el("input", {
+        type: "range",
+        min: String(EQ_MIN),
+        max: String(EQ_MAX),
+        step: "0.5",
+        value: String(bandVals[i]),
+        "data-band": String(i)
+      });
+      const val = el("div", { class: "val" });
+      row.appendChild(slider);
+      row.appendChild(val);
+      eqPanelEl.appendChild(row);
+      eqBandRows.push({ slider, val, hz, i });
+    });
+
+    // wire
+    eqPreEl.addEventListener("input", () => {
+      const v = parseFloat(eqPreEl.value);
+      setPreDb(v);
+      renderEqHeader();
+      syncEqLabels();
+    });
+
+    eqEnabledBtn.addEventListener("click", () => setEqEnabled(!eqEnabled));
+    eqResetBtn.addEventListener("click", () => {
+      setPreDb(0);
+      try { localStorage.setItem(LS.EQ_BANDS, JSON.stringify(Array(EQ_FREQS.length).fill(0))); } catch {}
+      eqBandRows.forEach(r => { r.slider.value = "0"; setBandDb(r.i, 0); });
+      syncEqLabels();
+    });
+
+    eqBandRows.forEach(r => {
+      r.slider.addEventListener("input", () => {
+        const v = parseFloat(r.slider.value);
+        setBandDb(r.i, v);
+        syncEqLabels();
+      });
+    });
+
+    // restore open state
+    const open = (() => { try { return localStorage.getItem(LS.EQ_OPEN) === "1"; } catch { return false; } })();
+    eqPanelEl.classList.toggle("show", open);
+
+    // restore enabled state
+    try { eqEnabled = localStorage.getItem(LS.EQ_ENABLED) !== "0"; } catch { eqEnabled = true; }
+    renderEqHeader();
+    syncEqLabels();
+  }
+
+  function syncEqLabels() {
+    if (eqPreValEl && eqPreEl) eqPreValEl.textContent = `${Number(eqPreEl.value).toFixed(1)} dB`;
+    eqBandRows.forEach(r => { r.val.textContent = `${Number(r.slider.value).toFixed(1)} dB`; });
+  }
+
+  function renderEqHeader() {
+    if (!eqEnabledBtn) return;
+    eqEnabledBtn.classList.toggle("on", !!eqEnabled);
+    eqEnabledBtn.textContent = eqEnabled ? "EQ: On" : "EQ: Off";
+  }
+
+  // ---------- Shuffle/Repeat ----------
+  function fisherYates(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function currentArtistKey() {
+    const t = __LIBRARY__[__ACTIVE_INDEX__];
+    if (!t) return null;
+    return (t.artist || t.projectTitle || "").trim().toLowerCase() || null;
+  }
+
+  function buildQueueFromCurrent() {
+    if (!__LIBRARY__.length || __ACTIVE_INDEX__ < 0) return;
+
+    let candidates = [];
+    if (shuffleMode === "all") {
+      candidates = __LIBRARY__.map((_, i) => i).filter(i => i !== __ACTIVE_INDEX__);
+    } else if (shuffleMode === "artist") {
+      const key = currentArtistKey();
+      candidates = __LIBRARY__
+        .map((it, i) => ({ it, i }))
+        .filter(x => x.i !== __ACTIVE_INDEX__)
+        .filter(x => ((x.it.artist || x.it.projectTitle || "").trim().toLowerCase()) === key)
+        .map(x => x.i);
+    } else {
+      queue = [];
+      queuePos = 0;
+      return;
+    }
+
+    fisherYates(candidates);
+    queue = [__ACTIVE_INDEX__, ...candidates];
+    queuePos = 0;
+  }
+
+  function applyShuffleUI() {
+    if (!shuffleAllBtn || !shuffleArtistBtn) return;
+    shuffleAllBtn.classList.toggle("on", shuffleMode === "all");
+    shuffleArtistBtn.classList.toggle("on", shuffleMode === "artist");
+  }
+
+  function applyRepeatUI() {
+    if (!repeatBtn) return;
+    repeatBtn.dataset.mode = repeatMode;
+    repeatBtn.textContent =
+      repeatMode === "off" ? "Repeat: Off" :
+      repeatMode === "one" ? "Repeat: One" :
+      "Repeat: All";
+    audioEl.loop = (repeatMode === "one");
+  }
+
+  function setShuffleMode(mode) {
+    shuffleMode = mode; // off|all|artist
+    try { localStorage.setItem(LS.SHUFFLE, shuffleMode); } catch {}
+    applyShuffleUI();
+    if (shuffleMode !== "off") buildQueueFromCurrent();
+    else { queue = []; queuePos = 0; }
+  }
+
+  function cycleRepeat() {
+    const order = ["off", "one", "all"];
+    repeatMode = order[(order.indexOf(repeatMode) + 1) % order.length];
+    try { localStorage.setItem(LS.REPEAT, repeatMode); } catch {}
+    applyRepeatUI();
+  }
+
+  function restoreModes() {
+    try {
+      const sm = localStorage.getItem(LS.SHUFFLE);
+      if (sm === "off" || sm === "all" || sm === "artist") shuffleMode = sm;
+      const rm = localStorage.getItem(LS.REPEAT);
+      if (rm === "off" || rm === "one" || rm === "all") repeatMode = rm;
+    } catch {}
+    applyShuffleUI();
+    applyRepeatUI();
+  }
+
+  // ---------- Core playback ----------
+  let isPlaying = false;
+  let isSeeking = false;
+
+  async function playTrack(track) {
+    if (!track) return;
+
+    // pick playable source
+    const src = track.mp3 || track.wav;
+    if (!src) return;
+
+    // update active index
+    if (typeof track.__libIndex === "number") __ACTIVE_INDEX__ = track.__libIndex;
+    else __ACTIVE_INDEX__ = __LIBRARY__.findIndex(t => (t.mp3 || t.wav) === (track.mp3 || track.wav));
+
+    if (shuffleMode !== "off") buildQueueFromCurrent();
+
+    audioEl.src = safeUrl(src);
+
+    titleEl.textContent = track.title || "—";
+
+    // download points to mp3 if present, otherwise wav
+    const dl = track.mp3 || track.wav;
+    dlBtn.href = safeUrl(dl);
+    dlBtn.setAttribute("download", (track.title || "track") + (track.mp3 ? ".mp3" : ".wav"));
+
+    // ensure audio graph (EQ)
+    await ensureAudioGraph(audioEl);
+
+    try {
+      await audioEl.play();
+      isPlaying = true;
+      playBtn.textContent = "Pause";
+    } catch (e) {
+      // autoplay blocked or load issue
+      isPlaying = false;
+      playBtn.textContent = "Play";
+      console.warn("play() failed:", e);
+      throw e;
+    }
+
+    // notify UI
+    window.dispatchEvent(new CustomEvent("maneit:nowplaying", { detail: { track } }));
+  }
+
+  function nextTrack() {
+    if (!__LIBRARY__.length) return;
+
+    if (shuffleMode !== "off") {
+      if (!queue.length) buildQueueFromCurrent();
+      queuePos++;
+
+      // artist shuffle can have no candidates
+      if (queue.length <= 1) {
+        if (repeatMode === "all") {
+          audioEl.currentTime = 0;
+          audioEl.play().catch(() => {});
+          return;
+        }
+        audioEl.pause();
+        isPlaying = false;
+        playBtn.textContent = "Play";
+        return;
+      }
+
+      if (queuePos >= queue.length) {
+        if (repeatMode === "all") {
+          buildQueueFromCurrent();
+          queuePos = 0;
+        } else {
+          audioEl.pause();
+          isPlaying = false;
+          playBtn.textContent = "Play";
+          return;
+        }
+      }
+
+      const idx = queue[queuePos];
+      playTrack(__LIBRARY__[idx]).catch(() => {});
+      return;
+    }
+
+    let idx = __ACTIVE_INDEX__ + 1;
+    if (idx >= __LIBRARY__.length) {
+      if (repeatMode === "all") idx = 0;
+      else {
+        audioEl.pause();
+        isPlaying = false;
+        playBtn.textContent = "Play";
+        return;
+      }
+    }
+
+    playTrack(__LIBRARY__[idx]).catch(() => {});
+  }
+
+  function prevTrack() {
+    if (!__LIBRARY__.length) return;
+
+    if (audioEl.currentTime > 3) {
+      audioEl.currentTime = 0;
+      return;
+    }
+
+    if (shuffleMode !== "off") {
+      if (!queue.length) buildQueueFromCurrent();
+      queuePos = Math.max(0, queuePos - 1);
+      const idx = queue[queuePos];
+      playTrack(__LIBRARY__[idx]).catch(() => {});
+      return;
+    }
+
+    let idx = __ACTIVE_INDEX__ - 1;
+    if (idx < 0) idx = (repeatMode === "all") ? (__LIBRARY__.length - 1) : 0;
+    playTrack(__LIBRARY__[idx]).catch(() => {});
+  }
+
+  function setLibrary(flattenedTracks) {
+    __LIBRARY__ = Array.isArray(flattenedTracks) ? flattenedTracks : [];
+  }
+
+  // ---------- Wire UI ----------
+  function restoreVolume() {
+    try {
+      const v = parseFloat(localStorage.getItem(LS.VOL));
+      if (isFinite(v)) audioEl.volume = clamp(v, 0, 1);
+    } catch {}
+    volEl.value = String(audioEl.volume);
+  }
+
+  function persistVolume() {
+    try { localStorage.setItem(LS.VOL, String(audioEl.volume)); } catch {}
+  }
+
+  function toggleEqPanel() {
+    const open = !eqPanelEl.classList.contains("show");
+    eqPanelEl.classList.toggle("show", open);
+    try { localStorage.setItem(LS.EQ_OPEN, open ? "1" : "0"); } catch {}
+    // height changed -> re-pad playlists
+    requestAnimationFrame(() => syncPlayerHeight());
+  }
+
+  function wire() {
+    playBtn.addEventListener("click", async () => {
+      if (!audioEl.src) return;
+      if (isPlaying) {
+        audioEl.pause();
+        isPlaying = false;
+        playBtn.textContent = "Play";
+      } else {
+        try {
+          await ensureAudioGraph(audioEl);
+          await audioEl.play();
+          isPlaying = true;
+          playBtn.textContent = "Pause";
+        } catch (e) {
+          isPlaying = false;
+          playBtn.textContent = "Play";
+        }
+      }
+    });
+
+    prevBtn.addEventListener("click", () => prevTrack());
+    nextBtn.addEventListener("click", () => nextTrack());
+
+    shuffleAllBtn.addEventListener("click", () => setShuffleMode(shuffleMode === "all" ? "off" : "all"));
+    shuffleArtistBtn.addEventListener("click", () => setShuffleMode(shuffleMode === "artist" ? "off" : "artist"));
+    repeatBtn.addEventListener("click", () => cycleRepeat());
+
+    eqToggleBtn.addEventListener("click", () => toggleEqPanel());
+
+    volEl.addEventListener("input", () => {
+      audioEl.volume = clamp(parseFloat(volEl.value), 0, 1);
+      persistVolume();
+    });
+    audioEl.addEventListener("volumechange", () => { volEl.value = String(audioEl.volume); });
+
+    // Seek
+    seekEl.addEventListener("input", () => {
+      isSeeking = true;
+      const pct = parseFloat(seekEl.value) / 1000;
+      const t = (audioEl.duration || 0) * pct;
+      timeEl.textContent = fmtTime(t);
+    });
+    seekEl.addEventListener("change", () => {
+      const pct = parseFloat(seekEl.value) / 1000;
+      const t = (audioEl.duration || 0) * pct;
+      if (isFinite(t)) audioEl.currentTime = t;
+      isSeeking = false;
+    });
+
+    // Time update
+    audioEl.addEventListener("timeupdate", () => {
+      if (!isSeeking) {
+        timeEl.textContent = fmtTime(audioEl.currentTime);
+        if (isFinite(audioEl.duration) && audioEl.duration > 0) {
+          const pct = audioEl.currentTime / audioEl.duration;
+          seekEl.value = String(Math.round(pct * 1000));
+        }
+      }
+    });
+
+    audioEl.addEventListener("loadedmetadata", () => {
+      durEl.textContent = fmtTime(audioEl.duration);
+      syncPlayerHeight();
+    });
+
+    audioEl.addEventListener("ended", () => {
+      if (repeatMode === "one") return; // native loop handles it
+      if (repeatMode === "all" || shuffleMode !== "off") nextTrack();
+      else {
+        isPlaying = false;
+        playBtn.textContent = "Play";
+      }
+    });
+  }
+
+  // ---------- Init ----------
+  function init() {
+    ensurePlayerDom();
+    restoreVolume();
+    restoreModes();
+
+    // restore EQ enabled
+    try { eqEnabled = localStorage.getItem(LS.EQ_ENABLED) !== "0"; } catch { eqEnabled = true; }
+    renderEqHeader();
+
+    wire();
+    syncEqLabels();
+    reconnectGraph(); // harmless pre-connect
+
+    // expose API
+    window.ManeitPlayer = {
+      playTrack,
+      setLibrary,
+      getPlayerHeight: () => Math.ceil((rootEl?.getBoundingClientRect().height || 140))
+    };
+  }
+
+  init();
+})();
