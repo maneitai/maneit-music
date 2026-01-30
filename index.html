@@ -43,7 +43,7 @@
       color: rgba(154,163,178,0.95);
     }
 
-    /* Error banner */
+    /* Visible audio error banner */
     .audio-error {
       max-width: var(--max-width);
       margin: 14px auto 0;
@@ -59,12 +59,51 @@
     }
     .audio-error strong { color: rgba(255, 170, 170, 0.95); }
 
-    /* Make sure last tracks aren't blocked by the fixed player */
-    .content { padding-bottom: 220px; }
+    /* Mini controls + volume (matches your existing look) */
+    .player-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+    .player-right .mini {
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.03);
+      color: rgba(232,237,247,0.92);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .06s ease, background .12s ease, border-color .12s ease;
+      white-space: nowrap;
+    }
+    .player-right .mini:hover { background: rgba(255,255,255,0.06); }
+    .player-right .mini:active { transform: translateY(1px); }
+    .player-right .mini.on {
+      border-color: rgba(110,231,255,0.35);
+      background: rgba(110,231,255,0.12);
+    }
+
+    .vol {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.02);
+      color: rgba(154,163,178,0.95);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .vol input[type="range"] { width: 120px; }
+
+    /* Ensure last tracks aren't blocked by fixed player */
+    .content { padding-bottom: 260px; }
   </style>
 </head>
 
 <body>
+
   <header class="site-header">
     <div class="brand">
       <div class="brand-kicker">MANEIT</div>
@@ -92,6 +131,7 @@
     <div id="listen" class="anchor"></div>
     <div id="projects" class="anchor"></div>
 
+    <!-- UI renders projects here -->
     <section class="projects" id="projectsList"></section>
 
     <div style="height: 18px;"></div>
@@ -112,7 +152,7 @@
     <div style="height: 90px;"></div>
   </main>
 
-  <!-- Player -->
+  <!-- PLAYER (stable markup) -->
   <footer class="player" id="player" hidden>
     <div class="player-inner">
       <div class="player-left">
@@ -138,7 +178,9 @@
 
       <div class="player-right">
         <button id="prevBtn" class="mini" type="button" title="Previous">Prev</button>
+
         <button id="playPause" class="primary" type="button">Play</button>
+
         <button id="nextBtn" class="mini" type="button" title="Next">Next</button>
 
         <label class="vol" title="Volume">
@@ -153,7 +195,20 @@
     </div>
   </footer>
 
-  <!-- One single JS file -->
-  <script src="js/app.js"></script>
+  <!-- Scripts (NO inline JS) -->
+  <script src="js/player.js" defer></script>
+  <script src="js/ui.js" defer></script>
+
+  <!-- Tiny nav-jump script only (safe) -->
+  <script defer>
+    document.querySelectorAll("[data-jump]").forEach(el => {
+      el.addEventListener("click", () => {
+        const sel = el.getAttribute("data-jump");
+        const target = document.querySelector(sel);
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+  </script>
+
 </body>
 </html>
