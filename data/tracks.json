@@ -5,7 +5,7 @@
       "id": "iskald",
       "title": "ISKALD",
       "tracks": [
-        { "title": "Anxiety", "artist": "Iskald", "mp3": "music/Iskald/iskald-anxiety.mp3" },
+        { "title": "Anxiety", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-anxiety.mp3",
         { "title": "Borderline Berserk", "artist": "Iskald", "mp3": "music/Iskald/iskald-borderline-berserk.mp3" },
         { "title": "Built from Chaos", "artist": "Iskald", "mp3": "music/Iskald/iskald-built-from-chaos.mp3" },
         { "title": "Clarity Over Noise", "artist": "Iskald", "mp3": "music/Iskald/iskald-clarity-over-noice.mp3" },
