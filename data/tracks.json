@@ -1,116 +1,31 @@
 {
   "version": 1,
-  "artists": [
+  "projects": [
     {
       "id": "iskald",
-      "name": "Iskald",
-      "folder": "Iskald",
+      "title": "ISKALD",
       "tracks": [
-        {
-          "id": "iskald-anxiety",
-          "title": "Anxiety",
-          "mp3": "music/Iskald/iskald-anxiety.mp3"
-        },
-        {
-          "id": "iskald-borderline-berserk",
-          "title": "Borderline Berserk",
-          "mp3": "music/Iskald/iskald-borderline-berserk.mp3"
-        },
-        {
-          "id": "iskald-built-from-chaos",
-          "title": "Built from Chaos",
-          "mp3": "music/Iskald/iskald-built-from-chaos.mp3"
-        },
-        {
-          "id": "iskald-clarity-over-noice",
-          "title": "Clarity Over Noise",
-          "mp3": "music/Iskald/iskald-clarity-over-noice.mp3"
-        },
-        {
-          "id": "iskald-cold-heart-hot-mind",
-          "title": "Cold Heart, Hot Mind",
-          "mp3": "music/Iskald/iskald-cold-heart-hot-mind.mp3"
-        },
-        {
-          "id": "iskald-cold-heart",
-          "title": "Cold Heart",
-          "mp3": "music/Iskald/iskald-cold-heart.mp3"
-        },
-        {
-          "id": "iskald-ghost-artist",
-          "title": "Ghost Artist",
-          "mp3": "music/Iskald/iskald-ghost-artist.mp3"
-        },
-        {
-          "id": "iskald-hard-to-wake",
-          "title": "Hard to Wake",
-          "mp3": "music/Iskald/iskald-hard-to-wake.mp3"
-        },
-        {
-          "id": "iskald-holder-linja",
-          "title": "Holder linja",
-          "mp3": "music/Iskald/iskald-holder-linja.mp3"
-        },
-        {
-          "id": "iskald-i-think-to-fast-to-sleep",
-          "title": "I Think Too Fast to Sleep",
-          "mp3": "music/Iskald/iskald-i-think-to-fast-to-sleep.mp3"
-        },
-        {
-          "id": "iskald-jeg-skal-hjem",
-          "title": "Jeg skal hjem",
-          "mp3": "music/Iskald/iskald-jeg-skal-hjem.mp3"
-        },
-        {
-          "id": "iskald-naar-det-blir-stille",
-          "title": "Når det blir stille",
-          "mp3": "music/Iskald/iskald-naar-det-blir-stille.mp3"
-        },
-        {
-          "id": "iskald-narcotics",
-          "title": "Narcotics",
-          "mp3": "music/Iskald/iskald-narcotics.mp3"
-        },
-        {
-          "id": "iskald-roses-in-the-concrete",
-          "title": "Roses in the Concrete",
-          "mp3": "music/Iskald/iskald-roses-in-the-concrete.mp3"
-        },
-        {
-          "id": "iskald-sons-of-the-night",
-          "title": "Sons of the Night",
-          "mp3": "music/Iskald/iskald-sons-of-the-night.mp3"
-        },
-        {
-          "id": "iskald-storm-in-my-head",
-          "title": "Storm in My Head",
-          "mp3": "music/Iskald/iskald-storm-in-my-head.mp3"
-        },
-        {
-          "id": "iskald-the-man-who-sees-everything",
-          "title": "The Man Who Sees Everything",
-          "mp3": "music/Iskald/iskald-the-man-who-sees-everything.mp3"
-        },
-        {
-          "id": "iskald-we-move-quiet",
-          "title": "We Move Quiet",
-          "mp3": "music/Iskald/iskald-we-move-quiet.mp3"
-        },
-        {
-          "id": "iskald-were-vikings",
-          "title": "Were Vikings",
-          "mp3": "music/Iskald/iskald-were-vikings.mp3"
-        },
-        {
-          "id": "iskald-when-it-matters",
-          "title": "When It Matters",
-          "mp3": "music/Iskald/iskald-when-it-matters.mp3"
-        },
-        {
-          "id": "iskald-wolf-of-two-countries",
-          "title": "Wolf of Two Countries",
-          "mp3": "music/Iskald/iskald-wolf-of-two-countries.mp3"
-        }
+        { "title": "Anxiety", "artist": "Iskald", "mp3": "music/Iskald/iskald-anxiety.mp3" },
+        { "title": "Borderline Berserk", "artist": "Iskald", "mp3": "music/Iskald/iskald-borderline-berserk.mp3" },
+        { "title": "Built from Chaos", "artist": "Iskald", "mp3": "music/Iskald/iskald-built-from-chaos.mp3" },
+        { "title": "Clarity Over Noise", "artist": "Iskald", "mp3": "music/Iskald/iskald-clarity-over-noice.mp3" },
+        { "title": "Cold Heart, Hot Mind", "artist": "Iskald", "mp3": "music/Iskald/iskald-cold-heart-hot-mind.mp3" },
+        { "title": "Cold Heart", "artist": "Iskald", "mp3": "music/Iskald/iskald-cold-heart.mp3" },
+        { "title": "Ghost Artist", "artist": "Iskald", "mp3": "music/Iskald/iskald-ghost-artist.mp3" },
+        { "title": "Hard to Wake", "artist": "Iskald", "mp3": "music/Iskald/iskald-hard-to-wake.mp3" },
+        { "title": "Holder linja", "artist": "Iskald", "mp3": "music/Iskald/iskald-holder-linja.mp3" },
+        { "title": "I Think Too Fast to Sleep", "artist": "Iskald", "mp3": "music/Iskald/iskald-i-think-to-fast-to-sleep.mp3" },
+        { "title": "Jeg skal hjem", "artist": "Iskald", "mp3": "music/Iskald/iskald-jeg-skal-hjem.mp3" },
+        { "title": "Når det blir stille", "artist": "Iskald", "mp3": "music/Iskald/iskald-naar-det-blir-stille.mp3" },
+        { "title": "Narcotics", "artist": "Iskald", "mp3": "music/Iskald/iskald-narcotics.mp3" },
+        { "title": "Roses in the Concrete", "artist": "Iskald", "mp3": "music/Iskald/iskald-roses-in-the-concrete.mp3" },
+        { "title": "Sons of the Night", "artist": "Iskald", "mp3": "music/Iskald/iskald-sons-of-the-night.mp3" },
+        { "title": "Storm in My Head", "artist": "Iskald", "mp3": "music/Iskald/iskald-storm-in-my-head.mp3" },
+        { "title": "The Man Who Sees Everything", "artist": "Iskald", "mp3": "music/Iskald/iskald-the-man-who-sees-everything.mp3" },
+        { "title": "We Move Quiet", "artist": "Iskald", "mp3": "music/Iskald/iskald-we-move-quiet.mp3" },
+        { "title": "Were Vikings", "artist": "Iskald", "mp3": "music/Iskald/iskald-were-vikings.mp3" },
+        { "title": "When It Matters", "artist": "Iskald", "mp3": "music/Iskald/iskald-when-it-matters.mp3" },
+        { "title": "Wolf of Two Countries", "artist": "Iskald", "mp3": "music/Iskald/iskald-wolf-of-two-countries.mp3" }
       ]
     }
   ]
