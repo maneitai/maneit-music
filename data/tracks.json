@@ -1,75 +1,116 @@
 {
-  "projects": [
+  "version": 1,
+  "artists": [
     {
       "id": "iskald",
-      "title": "ISKALD",
+      "name": "Iskald",
+      "folder": "Iskald",
       "tracks": [
-        { "title": "ISKALD — \"HOLDER LINJA\"", "artist": "Iskald", "mp3": "music/iskald/ISKALD — \"HOLDER LINJA\".mp3" },
-        { "title": "ISKALD — \"NÅR DET BLIR STILLE\"", "artist": "Iskald", "mp3": "music/iskald/ISKALD — \"NÅR DET BLIR STILLE\".mp3" },
-
-        { "title": "Iskald - Borderline Berserk", "artist": "Iskald", "mp3": "music/iskald/Iskald - Borderline Berserk.mp3" },
-        { "title": "Iskald - Built from Chaos", "artist": "Iskald", "mp3": "music/iskald/Iskald - Built from Chaos.mp3" },
-        { "title": "Iskald - Ghost Artist", "artist": "Iskald", "mp3": "music/iskald/Iskald - Ghost Artist.mp3" },
-        { "title": "Iskald - I THINK TO FAST TO SLEEP", "artist": "Iskald", "mp3": "music/iskald/Iskald - I THINK TO FAST TO SLEEP.mp3" },
-        { "title": "Iskald - Storm in My Head", "artist": "Iskald", "mp3": "music/iskald/Iskald - Storm in My Head.mp3" },
-
-        { "title": "Iskald - Anxiety", "artist": "Iskald", "mp3": "music/iskald/Iskald - Anxiety.mp3" },
-        { "title": "Iskald - Cold Heart, Hot Mind", "artist": "Iskald", "mp3": "music/iskald/Iskald - Cold Heart, Hot Mind.mp3" },
-        { "title": "Iskald - Cold Heart", "artist": "Iskald", "mp3": "music/iskald/Iskald - Cold Heart.mp3" },
-        { "title": "Iskald - Narcotics", "artist": "Iskald", "mp3": "music/iskald/Iskald - Narcotics.mp3" },
-        { "title": "Iskald - Roses in the concrete", "artist": "Iskald", "mp3": "music/iskald/Iskald - Roses in the concrete.mp3" },
-        { "title": "Iskald - Sons of the Night", "artist": "Iskald", "mp3": "music/iskald/Iskald - Sons of the Night.mp3" },
-        { "title": "Iskald - The Man Who Sees EVERYTHING (1)", "artist": "Iskald", "mp3": "music/iskald/Iskald - The Man Who Sees EVERYTHING (1).mp3" },
-        { "title": "Iskald - We move quiet", "artist": "Iskald", "mp3": "music/iskald/Iskald - We move quiet.mp3" },
-        { "title": "Iskald - Were Vikings (Remastered)", "artist": "Iskald", "mp3": "music/iskald/Iskald - Were Vikings (Remastered).mp3" },
-        { "title": "Iskald - Wolf of Two Countries", "artist": "Iskald", "mp3": "music/iskald/Iskald - Wolf of Two Countries.mp3" },
-
-        { "title": "Iskald - clarity over noise", "artist": "Iskald", "mp3": "music/iskald/Iskald - clarity over noise.mp3" },
-        { "title": "Iskald - hard to wake", "artist": "Iskald", "mp3": "music/iskald/Iskald - hard to wake.mp3" },
-        { "title": "Iskald - jeg skal hjem", "artist": "Iskald", "mp3": "music/iskald/Iskald - jeg skal hjem.mp3" },
-        { "title": "Iskald - when it matters", "artist": "Iskald", "mp3": "music/iskald/Iskald - when it matters.mp3" }
-      ]
-    },
-
-    {
-      "id": "retning",
-      "title": "RETNING",
-      "tracks": [
-        { "title": "Maneit - Euphoria (Ultimate Club Mix (Extended Version))", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Euphoria (Ultimate Club Mix (Extended Version)) (Instrumental).mp3" },
-        { "title": "Maneit - The Machine Awakens (Extended Mix)", "artist": "Maneit", "mp3": "music/RETNING/Maneit - The Machine Awakens (Extended Mix) (Instrumental).mp3" },
-
-        { "title": "Maneit - Aurora Frequency v2", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Aurora Frequency v2.mp3" },
-        { "title": "Maneit - Aurora Frequency", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Aurora Frequency.mp3" },
-
-        { "title": "Maneit - Cryoshift v2", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Cryoshift v2.mp3" },
-        { "title": "Maneit - Cryoshift", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Cryoshift.mp3" },
-
-        { "title": "Maneit - Crystal Overdrive", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Crystal Overdrive.mp3" },
-        { "title": "Maneit - Dreamwave", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Dreamwave.mp3" },
-
-        { "title": "Maneit - Electric Fjord v2", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Electric Fjord v2.mp3" },
-        { "title": "Maneit - Electric Fjord", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Electric Fjord.mp3" },
-
-        { "title": "Maneit - Euphoria (Club Edit)", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Euphoria (Club Edit).mp3" },
-        { "title": "Maneit - Euphoria (Instrumental Extended Mix v2)", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Euphoria (Instrumental Extended Mix v2) (Instrumental).mp3" },
-
-        { "title": "Maneit - Frozen Highway", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Frozen Highway.mp3" },
-        { "title": "Maneit - Midnight Rush", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Midnight Rush.mp3" },
-        { "title": "Maneit - Neon Skyline", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Neon Skyline.mp3" },
-        { "title": "Maneit - Radiant Velocity", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Radiant Velocity.mp3" },
-
-        { "title": "Maneit - Static Angel v2", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Static Angel v2.mp3" },
-        { "title": "Maneit - Static Angel", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Static Angel.mp3" },
-
-        { "title": "Maneit - Titanium Frost v2", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Titanium Frost v2.mp3" },
-        { "title": "Maneit - Titanium Frost", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Titanium Frost.mp3" },
-
-        { "title": "Maneit - Zero Degrees (club remix v2)", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Zero Degrees (club remix v2).mp3" },
-        { "title": "Maneit - Zero Degrees (club remix)", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Zero Degrees (club remix).mp3" },
-        { "title": "Maneit - Zero Degrees v2", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Zero Degrees v2.mp3" },
-        { "title": "Maneit - Zero Degrees", "artist": "Maneit", "mp3": "music/RETNING/Maneit - Zero Degrees.mp3" },
-
-        { "title": "RETNING - MOVE WITH THE LIGHT", "artist": "RETNING", "mp3": "music/RETNING/RETNING - MOVE WITH THE LIGHT.mp3" }
+        {
+          "id": "iskald-anxiety",
+          "title": "Anxiety",
+          "mp3": "music/Iskald/iskald-anxiety.mp3"
+        },
+        {
+          "id": "iskald-borderline-berserk",
+          "title": "Borderline Berserk",
+          "mp3": "music/Iskald/iskald-borderline-berserk.mp3"
+        },
+        {
+          "id": "iskald-built-from-chaos",
+          "title": "Built from Chaos",
+          "mp3": "music/Iskald/iskald-built-from-chaos.mp3"
+        },
+        {
+          "id": "iskald-clarity-over-noice",
+          "title": "Clarity Over Noise",
+          "mp3": "music/Iskald/iskald-clarity-over-noice.mp3"
+        },
+        {
+          "id": "iskald-cold-heart-hot-mind",
+          "title": "Cold Heart, Hot Mind",
+          "mp3": "music/Iskald/iskald-cold-heart-hot-mind.mp3"
+        },
+        {
+          "id": "iskald-cold-heart",
+          "title": "Cold Heart",
+          "mp3": "music/Iskald/iskald-cold-heart.mp3"
+        },
+        {
+          "id": "iskald-ghost-artist",
+          "title": "Ghost Artist",
+          "mp3": "music/Iskald/iskald-ghost-artist.mp3"
+        },
+        {
+          "id": "iskald-hard-to-wake",
+          "title": "Hard to Wake",
+          "mp3": "music/Iskald/iskald-hard-to-wake.mp3"
+        },
+        {
+          "id": "iskald-holder-linja",
+          "title": "Holder linja",
+          "mp3": "music/Iskald/iskald-holder-linja.mp3"
+        },
+        {
+          "id": "iskald-i-think-to-fast-to-sleep",
+          "title": "I Think Too Fast to Sleep",
+          "mp3": "music/Iskald/iskald-i-think-to-fast-to-sleep.mp3"
+        },
+        {
+          "id": "iskald-jeg-skal-hjem",
+          "title": "Jeg skal hjem",
+          "mp3": "music/Iskald/iskald-jeg-skal-hjem.mp3"
+        },
+        {
+          "id": "iskald-naar-det-blir-stille",
+          "title": "Når det blir stille",
+          "mp3": "music/Iskald/iskald-naar-det-blir-stille.mp3"
+        },
+        {
+          "id": "iskald-narcotics",
+          "title": "Narcotics",
+          "mp3": "music/Iskald/iskald-narcotics.mp3"
+        },
+        {
+          "id": "iskald-roses-in-the-concrete",
+          "title": "Roses in the Concrete",
+          "mp3": "music/Iskald/iskald-roses-in-the-concrete.mp3"
+        },
+        {
+          "id": "iskald-sons-of-the-night",
+          "title": "Sons of the Night",
+          "mp3": "music/Iskald/iskald-sons-of-the-night.mp3"
+        },
+        {
+          "id": "iskald-storm-in-my-head",
+          "title": "Storm in My Head",
+          "mp3": "music/Iskald/iskald-storm-in-my-head.mp3"
+        },
+        {
+          "id": "iskald-the-man-who-sees-everything",
+          "title": "The Man Who Sees Everything",
+          "mp3": "music/Iskald/iskald-the-man-who-sees-everything.mp3"
+        },
+        {
+          "id": "iskald-we-move-quiet",
+          "title": "We Move Quiet",
+          "mp3": "music/Iskald/iskald-we-move-quiet.mp3"
+        },
+        {
+          "id": "iskald-were-vikings",
+          "title": "Were Vikings",
+          "mp3": "music/Iskald/iskald-were-vikings.mp3"
+        },
+        {
+          "id": "iskald-when-it-matters",
+          "title": "When It Matters",
+          "mp3": "music/Iskald/iskald-when-it-matters.mp3"
+        },
+        {
+          "id": "iskald-wolf-of-two-countries",
+          "title": "Wolf of Two Countries",
+          "mp3": "music/Iskald/iskald-wolf-of-two-countries.mp3"
+        }
       ]
     }
   ]
