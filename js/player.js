@@ -1,134 +1,242 @@
 /* ==========================================================
-   MANEIT MUSIC — PLAYER (CORS-proof)
-   Goal:
-   - ALWAYS get sound
-   - ONLY enable WebAudio (EQ/Viz) if CORS is confirmed OK
+   MANEIT MUSIC — player.js (v1 SOUND-FIRST)
+   - Uses your existing DOM (#player, #audio, controls)
+   - ALWAYS plays with normal <audio> (no WebAudio yet)
+   - Fixes double slashes safely
+   - Exposes ManeitPlayer.playTrack(track)
    ========================================================== */
 
 (() => {
   "use strict";
 
-  const safeUrl = (path) => {
+  const $ = (id) => document.getElementById(id);
+
+  const player = $("player");
+  const audio = $("audio");
+
+  const titleEl = $("player-title");
+  const playPauseBtn = $("playPause");
+  const prevBtn = $("prevBtn");
+  const nextBtn = $("nextBtn");
+
+  const downloadMp3 = $("downloadMp3");
+
+  const progress = $("progress");
+  const timeNowEl = $("time-now");
+  const timeTotalEl = $("time-total");
+
+  const vol = $("vol");
+  const audioError = $("audioError");
+
+  const LS_VOL = "maneit_music_vol_public_v1";
+
+  let library = [];
+  let activeIndex = -1;
+  let isPlaying = false;
+  let activeRow = null;
+  let activePlayBtn = null;
+
+  function showError(msg) {
+    if (!audioError) return;
+    audioError.style.display = "block";
+    audioError.innerHTML = `<strong>AUDIO</strong>\n${msg}`;
+  }
+  function clearError() {
+    if (!audioError) return;
+    audioError.style.display = "none";
+    audioError.textContent = "";
+  }
+
+  function fmtTime(sec) {
+    if (!isFinite(sec) || sec < 0) return "0:00";
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${String(s).padStart(2, "0")}`;
+  }
+
+  function safeUrl(path) {
     try {
       const s = String(path || "").trim();
+      // preserve https:// but remove accidental double slashes elsewhere
       return encodeURI(s.replace(/([^:]\/)\/+/g, "$1"));
     } catch {
       return path;
     }
-  };
-
-  const audioEl = document.getElementById("audio") || (() => {
-    const a = document.createElement("audio");
-    a.id = "audio";
-    a.preload = "metadata";
-    document.body.appendChild(a);
-    return a;
-  })();
-
-  // Make sure it’s not muted / volume zero
-  audioEl.muted = false;
-  if (!isFinite(audioEl.volume) || audioEl.volume <= 0) audioEl.volume = 0.9;
-
-  let audioCtx = null;
-  let srcNode = null;
-  let webAudioEnabled = false;
-
-  function emitMode() {
-    window.dispatchEvent(new CustomEvent("maneit:audiomode", {
-      detail: { webaudio: webAudioEnabled }
-    }));
   }
 
-  // We test CORS WITHOUT downloading the full file:
-  // Try a tiny range request (0-0). If CORS blocks, fetch throws.
-  async function corsAllowsWebAudio(url) {
-    try {
-      const res = await fetch(url, {
-        method: "GET",
-        mode: "cors",
-        cache: "no-store",
-        headers: { "Range": "bytes=0-0" }
-      });
-      // If server doesn’t support Range it might return 200; still OK.
-      return res && (res.status === 206 || res.status === 200);
-    } catch (e) {
-      return false;
-    }
+  function clamp(n, a, b) { return Math.min(b, Math.max(a, n)); }
+
+  function setActiveUI(track) {
+    // deactivate previous
+    if (activeRow) activeRow.classList.remove("is-playing");
+    if (activePlayBtn) activePlayBtn.textContent = "Play";
+
+    activeRow = track.rowEl || null;
+    activePlayBtn = track.playBtnEl || null;
+
+    if (activeRow) activeRow.classList.add("is-playing");
+    if (activePlayBtn) activePlayBtn.textContent = "Pause";
+
+    titleEl.textContent = track.title || "—";
+
+    const src = track.mp3 || track.wav || "#";
+    downloadMp3.href = safeUrl(src);
+    downloadMp3.setAttribute("download", (track.title || "track") + (track.mp3 ? ".mp3" : ".wav"));
+
+    player.hidden = false;
   }
 
-  async function enableWebAudioIfAllowed() {
-    if (webAudioEnabled) return true;
+  async function playIndex(i) {
+    const t = library[i];
+    if (!t) return;
 
-    // Create context
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    clearError();
+    activeIndex = i;
 
-    // Resume if needed (must be after a user gesture; play click counts)
-    if (audioCtx.state === "suspended") {
-      try { await audioCtx.resume(); } catch {}
-    }
+    // MUST set before src when cross-origin
+    audio.crossOrigin = "anonymous";
+    audio.muted = false;
+    if (!isFinite(audio.volume) || audio.volume <= 0) audio.volume = 0.9;
 
-    // Create node ONLY when we are sure CORS is OK
-    if (!srcNode) {
-      srcNode = audioCtx.createMediaElementSource(audioEl);
-    }
+    const src = t.mp3 || t.wav;
+    const url = safeUrl(src);
 
-    // Minimal pass-through (your EQ/Viz can hook here later)
-    try { srcNode.disconnect(); } catch {}
-    try { srcNode.connect(audioCtx.destination); } catch {}
+    setActiveUI(t);
 
-    webAudioEnabled = true;
-    emitMode();
-    return true;
-  }
-
-  async function playUrl(rawUrl) {
-    const url = safeUrl(rawUrl);
-
-    // Important: set BEFORE src
-    audioEl.crossOrigin = "anonymous";
-
-    // Set src and play normally FIRST (this guarantees sound)
-    audioEl.src = url;
+    audio.src = url;
 
     try {
-      await audioEl.play();
+      await audio.play();
+      isPlaying = true;
+      playPauseBtn.textContent = "Pause";
     } catch (e) {
-      console.warn("play() failed:", e);
-      // Still continue; user can press play again
-    }
-
-    // Now check if CORS allows WebAudio
-    const ok = await corsAllowsWebAudio(url);
-
-    if (ok) {
-      // Safe to enable WebAudio (EQ/Viz)
-      try {
-        await enableWebAudioIfAllowed();
-      } catch (e) {
-        // If anything weird happens, stay in normal mode (sound continues)
-        console.warn("WebAudio enable failed; staying normal:", e);
-        webAudioEnabled = false;
-        emitMode();
-      }
-    } else {
-      // Stay normal audio (sound works, EQ/Viz off)
-      webAudioEnabled = false;
-      emitMode();
+      isPlaying = false;
+      playPauseBtn.textContent = "Play";
+      showError(`play() failed.\n${String(e)}\n\nURL:\n${url}`);
     }
   }
 
-  // Expose API
-  window.ManeitPlayer = window.ManeitPlayer || {};
-  window.ManeitPlayer.playUrl = playUrl;
+  function pause() {
+    audio.pause();
+    isPlaying = false;
+    playPauseBtn.textContent = "Play";
 
-  // Debug helper (optional)
-  window.ManeitPlayer._debug = () => ({
-    src: audioEl.src,
-    muted: audioEl.muted,
-    volume: audioEl.volume,
-    webAudioEnabled,
-    ctxState: audioCtx ? audioCtx.state : "none"
+    if (activePlayBtn) activePlayBtn.textContent = "Play";
+    if (activeRow) activeRow.classList.remove("is-playing");
+  }
+
+  function togglePlayPause() {
+    if (!audio.src) return;
+
+    if (isPlaying) {
+      pause();
+      return;
+    }
+
+    audio.play().then(() => {
+      isPlaying = true;
+      playPauseBtn.textContent = "Pause";
+      if (activePlayBtn) activePlayBtn.textContent = "Pause";
+      if (activeRow) activeRow.classList.add("is-playing");
+    }).catch(e => {
+      isPlaying = false;
+      playPauseBtn.textContent = "Play";
+      showError(`play() failed.\n${String(e)}\n\nURL:\n${audio.src}`);
+    });
+  }
+
+  function next() {
+    if (!library.length) return;
+    let i = activeIndex + 1;
+    if (i >= library.length) i = 0;
+    playIndex(i);
+  }
+
+  function prev() {
+    if (!library.length) return;
+
+    if (audio.currentTime > 3) {
+      audio.currentTime = 0;
+      return;
+    }
+
+    let i = activeIndex - 1;
+    if (i < 0) i = library.length - 1;
+    playIndex(i);
+  }
+
+  // Progress / time
+  let scrubbing = false;
+
+  audio.addEventListener("loadedmetadata", () => {
+    timeTotalEl.textContent = fmtTime(audio.duration);
+    timeNowEl.textContent = fmtTime(0);
+    progress.value = "0";
   });
 
-  emitMode();
+  audio.addEventListener("timeupdate", () => {
+    if (scrubbing) return;
+    timeNowEl.textContent = fmtTime(audio.currentTime);
+    const d = audio.duration || 0;
+    progress.value = d > 0 ? String(Math.round((audio.currentTime / d) * 1000)) : "0";
+  });
+
+  progress.addEventListener("pointerdown", () => { scrubbing = true; });
+  progress.addEventListener("pointerup", () => { scrubbing = false; });
+
+  progress.addEventListener("input", () => {
+    const d = audio.duration || 0;
+    if (d <= 0) return;
+    const v = Number(progress.value) / 1000;
+    timeNowEl.textContent = fmtTime(v * d);
+  });
+
+  progress.addEventListener("change", () => {
+    const d = audio.duration || 0;
+    if (d <= 0) return;
+    audio.currentTime = (Number(progress.value) / 1000) * d;
+  });
+
+  audio.addEventListener("ended", () => {
+    isPlaying = false;
+    playPauseBtn.textContent = "Play";
+    next();
+  });
+
+  audio.addEventListener("error", () => {
+    const code = audio.error ? audio.error.code : "unknown";
+    showError(`Audio element error. code=${code}\n\nURL:\n${audio.src}`);
+  });
+
+  // Wire buttons
+  playPauseBtn.addEventListener("click", togglePlayPause);
+  nextBtn.addEventListener("click", next);
+  prevBtn.addEventListener("click", prev);
+
+  // Volume restore
+  try {
+    const v = parseFloat(localStorage.getItem(LS_VOL));
+    if (isFinite(v)) audio.volume = clamp(v, 0, 1);
+  } catch {}
+  vol.value = String(audio.volume || 0.9);
+
+  vol.addEventListener("input", () => {
+    audio.volume = clamp(parseFloat(vol.value), 0, 1);
+    try { localStorage.setItem(LS_VOL, String(audio.volume)); } catch {}
+  });
+  audio.addEventListener("volumechange", () => {
+    vol.value = String(audio.volume);
+  });
+
+  // Expose API for ui.js
+  window.ManeitPlayer = {
+    setLibrary(items) {
+      library = Array.isArray(items) ? items : [];
+    },
+    playTrack(track) {
+      // track must have __index (set by ui.js)
+      if (!track || typeof track.__index !== "number") return Promise.resolve();
+      return playIndex(track.__index);
+    }
+  };
 })();
