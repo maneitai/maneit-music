@@ -1,61 +1,55 @@
-{
-  "version": 1,
-  "projects": [
-    {
-      "id": "iskald",
-      "title": "ISKALD",
-      "tracks": [
-        { "title": "Anxiety", "title_en": "Anxiety", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-anxiety.mp3" },
-        { "title": "Borderline Berserk", "title_en": "Borderline Berserk", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-borderline-berserk.mp3" },
-        { "title": "Built From Chaos", "title_en": "Built From Chaos", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-built-from-chaos.mp3" },
-        { "title": "Clarity Over Noise", "title_en": "Clarity Over Noise", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-clarity-over-noice.mp3" },
-        { "title": "Cold Heart Hot Mind", "title_en": "Cold Heart Hot Mind", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-cold-heart-hot-mind.mp3" },
-        { "title": "Cold Heart", "title_en": "Cold Heart", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-cold-heart.mp3" },
-        { "title": "Ghost Artist", "title_en": "Ghost Artist", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-ghost-artist.mp3" },
-        { "title": "Hard To Wake", "title_en": "Hard To Wake", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-hard-to-wake.mp3" },
-        { "title": "Holder Linja", "title_no": "Holder linja", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-holder-linja.mp3" },
-        { "title": "I Think Too Fast To Sleep", "title_en": "I Think Too Fast To Sleep", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-i-think-to-fast-to-sleep.mp3" },
-        { "title": "Jeg Skal Hjem", "title_no": "Jeg skal hjem", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-jeg-skal-hjem.mp3" },
-        { "title": "Jeg Blir Misforstått", "title_no": "Jeg blir misforstått", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-jeg-blir-misforsttt.mp3" },
-        { "title": "Jeg Er Ikke Ødelagt", "title_no": "Jeg er ikke ødelagt", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-jeg-er-ikke-delagt.mp3" },
-        { "title": "Jeg Trekker Meg Unna", "title_no": "Jeg trekker meg unna", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-jeg-trekker-meg-unna.mp3" },
-        { "title": "Mellom Impuls Og Kontroll", "title_no": "Mellom impuls og kontroll", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-mellom-impuls-og-kontroll.mp3" },
-        { "title": "Når Det Blir Stille", "title_no": "Når det blir stille", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-naar-det-blir-stille.mp3" },
-        { "title": "Narcotics", "title_en": "Narcotics", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-narcotics.mp3" },
-        { "title": "Noe Er Galt", "title_no": "Noe er galt", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-noe-er-galt.mp3" },
-        { "title": "Roses In The Concrete", "title_en": "Roses In The Concrete", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-roses-in-the-concrete.mp3" },
-        { "title": "Sons Of The Night", "title_en": "Sons Of The Night", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-sons-of-the-night.mp3" },
-        { "title": "Storm In My Head", "title_en": "Storm In My Head", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-storm-in-my-head.mp3" },
-        { "title": "Systemene Jeg Bygger", "title_no": "Systemene jeg bygger", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-systemene-jeg-bygger.mp3" },
-        { "title": "Svaret Jeg Gikk Mot", "title_no": "Svaret jeg gikk mot", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-svaret-jeg-gikk-mot.mp3" },
-        { "title": "The Man Who Sees Everything", "title_en": "The Man Who Sees Everything", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-the-man-who-sees-everything.mp3" },
-        { "title": "We Move Quiet", "title_en": "We Move Quiet", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-we-move-quiet.mp3" },
-        { "title": "Were Vikings (Remastered)", "title_en": "Were Vikings (Remastered)", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-were-vikings-remastered.mp3" },
-        { "title": "When It Matters", "title_en": "When It Matters", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-when-it-matters.mp3" },
-        { "title": "Wolf Of Two Countries", "title_en": "Wolf Of Two Countries", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald/iskald-wolf-of-two-countries.mp3" }
-      ]
-    },
-    {
-      "id": "maneit",
-      "title": "MANEIT",
-      "tracks": [
-        { "title": "Aurora Frequency", "title_en": "Aurora Frequency", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-aurora-frequency.mp3" },
-        { "title": "Cryoshift", "title_en": "Cryoshift", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-cryoshift.mp3" },
-        { "title": "Crystal Overdrive", "title_en": "Crystal Overdrive", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-crystal-overdrive.mp3" },
-        { "title": "Dreamweaver", "title_en": "Dreamweaver", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-dreamweaver.mp3" },
-        { "title": "Electric Fjord", "title_en": "Electric Fjord", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-electric-fjord.mp3" },
-        { "title": "Euphoria (Club Edit)", "title_en": "Euphoria (Club Edit)", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-euphoria-club-edit.mp3" },
-        { "title": "Euphoria (Instrumental)", "title_en": "Euphoria (Instrumental)", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-euphoria-instrumental.mp3" },
-        { "title": "Euphoria (Ultimate)", "title_en": "Euphoria (Ultimate)", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-euphoria-ultimate.mp3" },
-        { "title": "Frozen Highway", "title_en": "Frozen Highway", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-frozen-highway.mp3" },
-        { "title": "Midnight Rush", "title_en": "Midnight Rush", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-midnight-rush.mp3" },
-        { "title": "Neon Skyline", "title_en": "Neon Skyline", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-neon-skyline.mp3" },
-        { "title": "Radiant Velocity", "title_en": "Radiant Velocity", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-radiant-velocity.mp3" },
-        { "title": "Static Angel", "title_en": "Static Angel", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-static-angel.mp3" },
-        { "title": "The Machine Awakens", "title_en": "The Machine Awakens", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-the-machine-awakens.mp3" },
-        { "title": "Titanium Frost", "title_en": "Titanium Frost", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-titanium-frost.mp3" },
-        { "title": "Zero Degrees", "title_en": "Zero Degrees", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-zero-degrees.mp3" }
-      ]
-    }
-  ]
+$root = "F:\musikk\musikk"
+$outFile = Join-Path $root "tracks.json"
+$baseUrl = "https://musikk.maneit.no/music"
+
+function TitleFromBaseName([string]$baseName) {
+    $t = $baseName
+    if ($t.StartsWith("iskald-")) { $t = $t.Substring(7) }
+    if ($t.StartsWith("maneit-")) { $t = $t.Substring(7) }
+    $t = $t -replace '-', ' '
+    $ti = [System.Globalization.CultureInfo]::GetCultureInfo("en-US").TextInfo
+    return $ti.ToTitleCase($t)
 }
+
+function BuildProject($id, $title, $folderName, $artist) {
+    $folderPath = Join-Path $root $folderName
+    $files = @()
+    if (Test-Path $folderPath) {
+        $files = Get-ChildItem -File -Path $folderPath -Filter "*.mp3" | Sort-Object Name
+    }
+
+    $tracks = @()
+    foreach ($f in $files) {
+        $tracks += [pscustomobject]@{
+            title  = (TitleFromBaseName $f.BaseName)
+            artist = $artist
+            mp3    = "$baseUrl/$folderName/$($f.Name)"
+        }
+    }
+
+    return [pscustomobject]@{
+        id     = $id
+        title  = $title
+        tracks = $tracks
+    }
+}
+
+$projects = @()
+$projects += BuildProject -id "iskald_no" -title "ISKALD (NO)" -folderName "iskald_no" -artist "Iskald"
+$projects += BuildProject -id "iskald_en" -title "ISKALD (EN)" -folderName "iskald_en" -artist "Iskald"
+
+# Hvis du har Maneit-mappe lokalt og vil ha den med automatisk:
+if (Test-Path (Join-Path $root "maneit")) {
+    $projects += BuildProject -id "maneit" -title "MANEIT" -folderName "maneit" -artist "Maneit"
+}
+
+$outObj = [pscustomobject]@{
+    version  = 1
+    projects = $projects
+}
+
+$outJson = $outObj | ConvertTo-Json -Depth 10
+Set-Content -LiteralPath $outFile -Value $outJson -Encoding UTF8
+
+Write-Host "Wrote: $outFile"
+$projects | ForEach-Object { Write-Host "$($_.id): $($_.tracks.Count) tracks" }
