@@ -5,102 +5,462 @@
       "id": "iskald_no",
       "title": "ISKALD (NO)",
       "tracks": [
-        { "title": "Adhd Maskinen", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-adhd-maskinen.mp3" },
-        { "title": "Adhd Maskinen V2", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-adhd-maskinen-v2.mp3" },
-        { "title": "Alene Men Ikke Tom", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-alene-men-ikke-tom.mp3" },
-        { "title": "Angst Har En Stemme", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-angst-har-en-stemme.mp3" },
-        { "title": "Hjem", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-hjem.mp3" },
-        { "title": "Jeg Blir Misforst Tt", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-jeg-blir-misforst-tt.mp3" },
-        { "title": "Jeg Er Ikke Delagt", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-jeg-er-ikke-delagt.mp3" },
-        { "title": "Jeg Skal Hjem", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-jeg-skal-hjem.mp3" },
-        { "title": "Jeg Trekker Meg Unna", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-jeg-trekker-meg-unna.mp3" },
-        { "title": "Mellom Impuls Og Kontroll", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-mellom-impuls-og-kontroll.mp3" },
-        { "title": "Naar Det Blir Stille", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-naar-det-blir-stille.mp3" },
-        { "title": "Naar Det Blir Stille 1", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-naar-det-blir-stille-1.mp3" },
-        { "title": "Noe Er Galt", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-noe-er-galt.mp3" },
-        { "title": "Svaret Jeg Gikk Mot", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-svaret-jeg-gikk-mot.mp3" },
-        { "title": "Systemene Jeg Bygger", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-systemene-jeg-bygger.mp3" }
+        {
+          "title": "Adhd Maskinen",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-adhd-maskinen.mp3"
+        },
+        {
+          "title": "Adhd Maskinen V2",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-adhd-maskinen-v2.mp3"
+        },
+        {
+          "title": "Alene Men Ikke Tom",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-alene-men-ikke-tom.mp3"
+        },
+        {
+          "title": "Angst Har En Stemme",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-angst-har-en-stemme.mp3"
+        },
+        {
+          "title": "Hjem",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-hjem.mp3"
+        },
+        {
+          "title": "Jeg Blir Misforst Tt",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-jeg-blir-misforst-tt.mp3"
+        },
+        {
+          "title": "Jeg Er Ikke Delagt",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-jeg-er-ikke-delagt.mp3"
+        },
+        {
+          "title": "Jeg Skal Hjem",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-jeg-skal-hjem.mp3"
+        },
+        {
+          "title": "Jeg Trekker Meg Unna",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-jeg-trekker-meg-unna.mp3"
+        },
+        {
+          "title": "Mellom Impuls Og Kontroll",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-mellom-impuls-og-kontroll.mp3"
+        },
+        {
+          "title": "Naar Det Blir Stille",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-naar-det-blir-stille.mp3"
+        },
+        {
+          "title": "Naar Det Blir Stille 1",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-naar-det-blir-stille-1.mp3"
+        },
+        {
+          "title": "Noe Er Galt",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-noe-er-galt.mp3"
+        },
+        {
+          "title": "Svaret Jeg Gikk Mot",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-svaret-jeg-gikk-mot.mp3"
+        },
+        {
+          "title": "Systemene Jeg Bygger",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_no/iskald-systemene-jeg-bygger.mp3"
+        }
       ]
     },
     {
       "id": "iskald_en",
       "title": "ISKALD (EN)",
       "tracks": [
-        { "title": "Anxiety", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-anxiety.mp3" },
-        { "title": "Borderline Berserk", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-borderline-berserk.mp3" },
-        { "title": "Built From Chaos", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-built-from-chaos.mp3" },
-        { "title": "Clarity Over Noice", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-clarity-over-noice.mp3" },
-        { "title": "Cold Heart", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-cold-heart.mp3" },
-        { "title": "Cold Heart Hot Mind", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-cold-heart-hot-mind.mp3" },
-        { "title": "Ghost Artist", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-ghost-artist.mp3" },
-        { "title": "Hard To Wake", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-hard-to-wake.mp3" },
-        { "title": "Holder Linja", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-holder-linja.mp3" },
-        { "title": "I Think To Fast To Sleep", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-i-think-to-fast-to-sleep.mp3" },
-        { "title": "Narcotics", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-narcotics.mp3" },
-        { "title": "Roses In The Concrete", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-roses-in-the-concrete.mp3" },
-        { "title": "Sons Of The Night", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-sons-of-the-night.mp3" },
-        { "title": "Storm In My Head", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-storm-in-my-head.mp3" },
-        { "title": "The Man Who Sees Everything 1", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-the-man-who-sees-everything-1.mp3" },
-        { "title": "We Move Quiet", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-we-move-quiet.mp3" },
-        { "title": "Were Vikings Remastered", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-were-vikings-remastered.mp3" },
-        { "title": "When It Matters", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-when-it-matters.mp3" },
-        { "title": "Wolf Of Two Countries", "artist": "Iskald", "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-wolf-of-two-countries.mp3" }
+        {
+          "title": "Anxiety",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-anxiety.mp3"
+        },
+        {
+          "title": "Borderline Berserk",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-borderline-berserk.mp3"
+        },
+        {
+          "title": "Built From Chaos",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-built-from-chaos.mp3"
+        },
+        {
+          "title": "Clarity Over Noice",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-clarity-over-noice.mp3"
+        },
+        {
+          "title": "Cold Heart",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-cold-heart.mp3"
+        },
+        {
+          "title": "Cold Heart Hot Mind",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-cold-heart-hot-mind.mp3"
+        },
+        {
+          "title": "Ghost Artist",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-ghost-artist.mp3"
+        },
+        {
+          "title": "Hard To Wake",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-hard-to-wake.mp3"
+        },
+        {
+          "title": "Holder Linja",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-holder-linja.mp3"
+        },
+        {
+          "title": "I Think To Fast To Sleep",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-i-think-to-fast-to-sleep.mp3"
+        },
+        {
+          "title": "Narcotics",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-narcotics.mp3"
+        },
+        {
+          "title": "Roses In The Concrete",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-roses-in-the-concrete.mp3"
+        },
+        {
+          "title": "Sons Of The Night",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-sons-of-the-night.mp3"
+        },
+        {
+          "title": "Storm In My Head",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-storm-in-my-head.mp3"
+        },
+        {
+          "title": "The Man Who Sees Everything 1",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-the-man-who-sees-everything-1.mp3"
+        },
+        {
+          "title": "We Move Quiet",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-we-move-quiet.mp3"
+        },
+        {
+          "title": "Were Vikings Remastered",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-were-vikings-remastered.mp3"
+        },
+        {
+          "title": "When It Matters",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-when-it-matters.mp3"
+        },
+        {
+          "title": "Wolf Of Two Countries",
+          "artist": "Iskald",
+          "mp3": "https://musikk.maneit.no/music/iskald_en/iskald-wolf-of-two-countries.mp3"
+        }
       ]
     },
     {
       "id": "maneit",
       "title": "MANEIT",
       "tracks": [
-        { "title": "Aurora Frequency", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-aurora-frequency.mp3" },
-        { "title": "Aurora Frequency V2", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-aurora-frequency-v2.mp3" },
-        { "title": "Cryoshift", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-cryoshift.mp3" },
-        { "title": "Cryoshift V2", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-cryoshift-v2.mp3" },
-        { "title": "Crystal Overdrive", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-crystal-overdrive.mp3" },
-        { "title": "Dreamweave", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-dreamweave.mp3" },
-        { "title": "Electric Fjord", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-electric-fjord.mp3" },
-        { "title": "Electric Fjord V2", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-electric-fjord-v2.mp3" },
-        { "title": "Euphoria Club Edit", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-euphoria-club-edit.mp3" },
-        { "title": "Euphoria Instrumental Extended Mixv2 Instrumental", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-euphoria-instrumental-extended-mixv2-instrumental.mp3" },
-        { "title": "Euphoria Ultimate Club Mix Extended Version Instrumental", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-euphoria-ultimate-club-mix-extended-version-instrumental.mp3" },
-        { "title": "Frozen Highway", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-frozen-highway.mp3" },
-        { "title": "Midnight Rush", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-midnight-rush.mp3" },
-        { "title": "Neon Skyline", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-neon-skyline.mp3" },
-        { "title": "Radiant Velocity", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-radiant-velocity.mp3" },
-        { "title": "Static Angel", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-static-angel.mp3" },
-        { "title": "Static Angel V2", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-static-angel-v2.mp3" },
-        { "title": "The Machine Awakens Extended Mix Instrumental", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-the-machine-awakens-extended-mix-instrumental.mp3" },
-        { "title": "Titanium Frost", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-titanium-frost.mp3" },
-        { "title": "Titanium Frost V2", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-titanium-frost-v2.mp3" },
-        { "title": "Zero Degrees", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-zero-degrees.mp3" },
-        { "title": "Zero Degrees Club Remix", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-zero-degrees-club-remix.mp3" },
-        { "title": "Zero Degrees Club Remix V2", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-zero-degrees-club-remix-v2.mp3" },
-        { "title": "Zero Degrees V2", "artist": "Maneit", "mp3": "https://musikk.maneit.no/music/maneit/maneit-zero-degrees-v2.mp3" }
+        {
+          "title": "Aurora Frequency",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-aurora-frequency.mp3"
+        },
+        {
+          "title": "Aurora Frequency V2",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-aurora-frequency-v2.mp3"
+        },
+        {
+          "title": "Cryoshift",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-cryoshift.mp3"
+        },
+        {
+          "title": "Cryoshift V2",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-cryoshift-v2.mp3"
+        },
+        {
+          "title": "Crystal Overdrive",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-crystal-overdrive.mp3"
+        },
+        {
+          "title": "Dreamweave",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-dreamweave.mp3"
+        },
+        {
+          "title": "Electric Fjord",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-electric-fjord.mp3"
+        },
+        {
+          "title": "Electric Fjord V2",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-electric-fjord-v2.mp3"
+        },
+        {
+          "title": "Euphoria Club Edit",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-euphoria-club-edit.mp3"
+        },
+        {
+          "title": "Euphoria Instrumental Extended Mixv2 Instrumental",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-euphoria-instrumental-extended-mixv2-instrumental.mp3"
+        },
+        {
+          "title": "Euphoria Ultimate Club Mix Extended Version Instrumental",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-euphoria-ultimate-club-mix-extended-version-instrumental.mp3"
+        },
+        {
+          "title": "Frozen Highway",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-frozen-highway.mp3"
+        },
+        {
+          "title": "Midnight Rush",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-midnight-rush.mp3"
+        },
+        {
+          "title": "Neon Skyline",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-neon-skyline.mp3"
+        },
+        {
+          "title": "Radiant Velocity",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-radiant-velocity.mp3"
+        },
+        {
+          "title": "Static Angel",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-static-angel.mp3"
+        },
+        {
+          "title": "Static Angel V2",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-static-angel-v2.mp3"
+        },
+        {
+          "title": "The Machine Awakens Extended Mix Instrumental",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-the-machine-awakens-extended-mix-instrumental.mp3"
+        },
+        {
+          "title": "Titanium Frost",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-titanium-frost.mp3"
+        },
+        {
+          "title": "Titanium Frost V2",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-titanium-frost-v2.mp3"
+        },
+        {
+          "title": "Zero Degrees",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-zero-degrees.mp3"
+        },
+        {
+          "title": "Zero Degrees Club Remix",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-zero-degrees-club-remix.mp3"
+        },
+        {
+          "title": "Zero Degrees Club Remix V2",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-zero-degrees-club-remix-v2.mp3"
+        },
+        {
+          "title": "Zero Degrees V2",
+          "artist": "Maneit",
+          "mp3": "https://musikk.maneit.no/music/maneit/maneit-zero-degrees-v2.mp3"
+        }
       ]
     },
     {
       "id": "half_past_now",
       "title": "HALF PAST NOW",
       "tracks": [
-        { "title": "After The Rush", "artist": "Half Past Now", "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-after-the-rush.mp3" },
-        { "title": "Clear Enough", "artist": "Half Past Now", "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-clear-enough.mp3" },
-        { "title": "Going Home", "artist": "Half Past Now", "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-going-home.mp3" },
-        { "title": "Half Past Now", "artist": "Half Past Now", "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-half-past-now.mp3" },
-        { "title": "Half Past Now 1", "artist": "Half Past Now", "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-half-past-now-1.mp3" },
-        { "title": "Late Afternoon", "artist": "Half Past Now", "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-late-afternoon.mp3" },
-        { "title": "No Emphasis", "artist": "Half Past Now", "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-no-emphasis.mp3" },
-        { "title": "No Reaction", "artist": "Half Past Now", "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-no-reaction.mp3" },
-        { "title": "Nothing Urgent 1", "artist": "Half Past Now", "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-nothing-urgent-1.mp3" },
-        { "title": "Still Urgent", "artist": "Half Past Now", "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-still-urgent.mp3" }
+        {
+          "title": "After The Rush",
+          "artist": "Half Past Now",
+          "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-after-the-rush.mp3"
+        },
+        {
+          "title": "Clear Enough",
+          "artist": "Half Past Now",
+          "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-clear-enough.mp3"
+        },
+        {
+          "title": "Going Home",
+          "artist": "Half Past Now",
+          "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-going-home.mp3"
+        },
+        {
+          "title": "Half Past Now 1",
+          "artist": "Half Past Now",
+          "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-half-past-now-1.mp3"
+        },
+        {
+          "title": "Half Past Now",
+          "artist": "Half Past Now",
+          "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-half-past-now.mp3"
+        },
+        {
+          "title": "Late Afternoon",
+          "artist": "Half Past Now",
+          "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-late-afternoon.mp3"
+        },
+        {
+          "title": "No Emphasis",
+          "artist": "Half Past Now",
+          "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-no-emphasis.mp3"
+        },
+        {
+          "title": "No Reaction",
+          "artist": "Half Past Now",
+          "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-no-reaction.mp3"
+        },
+        {
+          "title": "Nothing Urgent 1",
+          "artist": "Half Past Now",
+          "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-nothing-urgent-1.mp3"
+        },
+        {
+          "title": "Still Urgent",
+          "artist": "Half Past Now",
+          "mp3": "https://musikk.maneit.no/music/half_past_now/half-past-now-still-urgent.mp3"
+        }
       ]
     },
     {
       "id": "almost_fine",
       "title": "ALMOST FINE",
       "tracks": [
-        { "title": "Alright Enough", "artist": "Almost Fine", "mp3": "https://musikk.maneit.no/music/almost_fine/almost-fine-alright-enough.mp3" },
-        { "title": "Almost Fine", "artist": "Almost Fine", "mp3": "https://musikk.maneit.no/music/almost_fine/almost-fine-almost-fine.mp3" },
-        { "title": "Late But Fine", "artist": "Almost Fine", "mp3": "https://musikk.maneit.no/music/almost_fine/almost-fine-late-but-fine.mp3" },
-        { "title": "No Big Plans Tonight", "artist": "Almost Fine", "mp3": "https://musikk.maneit.no/music/almost_fine/almost-fine-no-big-plans-tonight.mp3" },
-        { "title": "No Big Plans Tonight 1", "artist": "Almost Fine", "mp3": "https://musikk.maneit.no/music/almost_fine/almost-fine-no-big-plans-tonight-1.mp3" },
-        { "title": "Nothing Heavy", "artist": "Almost Fine", "mp3": "https://musikk.maneit.no/music/almost_fine/almost-fine-nothing-heavy.mp3" },
-        { "title
+        {
+          "title": "Alright Enough",
+          "artist": "Almost Fine",
+          "mp3": "https://musikk.maneit.no/music/almost_fine/almost-fine-alright-enough.mp3"
+        },
+        {
+          "title": "Late But Fine",
+          "artist": "Almost Fine",
+          "mp3": "https://musikk.maneit.no/music/almost_fine/almost-fine-late-but-fine.mp3"
+        },
+        {
+          "title": "No Big Plans Tonight 1",
+          "artist": "Almost Fine",
+          "mp3": "https://musikk.maneit.no/music/almost_fine/almost-fine-no-big-plans-tonight-1.mp3"
+        },
+        {
+          "title": "No Big Plans Tonight",
+          "artist": "Almost Fine",
+          "mp3": "https://musikk.maneit.no/music/almost_fine/almost-fine-no-big-plans-tonight.mp3"
+        },
+        {
+          "title": "Nothing Heavy",
+          "artist": "Almost Fine",
+          "mp3": "https://musikk.maneit.no/music/almost_fine/almost-fine-nothing-heavy.mp3"
+        },
+        {
+          "title": "Still Here Tomorrow",
+          "artist": "Almost Fine",
+          "mp3": "https://musikk.maneit.no/music/almost_fine/almost-fine-still-here-tomorrow.mp3"
+        },
+        {
+          "title": "Almost Fine",
+          "artist": "Almost Fine",
+          "mp3": "https://musikk.maneit.no/music/almost_fine/almost-fine-almost-fine.mp3"
+        },
+        {
+          "title": "Nothing To Prove",
+          "artist": "Almost Fine",
+          "mp3": "https://musikk.maneit.no/music/almost_fine/almost-fine-nothing-to-prove.mp3"
+        }
+      ]
+    },
+    {
+      "id": "off_mode",
+      "title": "OFF MODE",
+      "tracks": [
+        {
+          "title": "Brain In Safe Mode",
+          "artist": "OFF MODE",
+          "mp3": "https://musikk.maneit.no/music/off_mode/off-mode-brain-in-safe-mode.mp3"
+        },
+        {
+          "title": "Break The Schedule",
+          "artist": "OFF MODE",
+          "mp3": "https://musikk.maneit.no/music/off_mode/off-mode-break-the-schedule.mp3"
+        },
+        {
+          "title": "Cut The Feed",
+          "artist": "OFF MODE",
+          "mp3": "https://musikk.maneit.no/music/off_mode/off-mode-cut-the-feed.mp3"
+        },
+        {
+          "title": "Hard Reset 1",
+          "artist": "OFF MODE",
+          "mp3": "https://musikk.maneit.no/music/off_mode/off-mode-hard-reset-1.mp3"
+        },
+        {
+          "title": "Hard Reset",
+          "artist": "OFF MODE",
+          "mp3": "https://musikk.maneit.no/music/off_mode/off-mode-hard-reset.mp3"
+        },
+        {
+          "title": "No Updates",
+          "artist": "OFF MODE",
+          "mp3": "https://musikk.maneit.no/music/off_mode/off-mode-no-updates.mp3"
+        },
+        {
+          "title": "Offline Tonight",
+          "artist": "OFF MODE",
+          "mp3": "https://musikk.maneit.no/music/off_mode/off-mode-offline-tonight.mp3"
+        },
+        {
+          "title": "Overload",
+          "artist": "OFF MODE",
+          "mp3": "https://musikk.maneit.no/music/off_mode/off-mode-overload.mp3"
+        },
+        {
+          "title": "System Crash",
+          "artist": "OFF MODE",
+          "mp3": "https://musikk.maneit.no/music/off_mode/off-mode-system-crash.mp3"
+        }
+      ]
+    }
+  ]
+}
